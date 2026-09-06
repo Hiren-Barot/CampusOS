@@ -2,17 +2,12 @@ from typing import Generic, TypeVar, Type, Optional, List, Any
 from sqlalchemy.orm import Session
 from sqlalchemy import select
 
-from src.backend.app.core.database import Base
+from app.core.database import Base
 
-# Generic type for SQLAlchemy models
 ModelType = TypeVar("ModelType", bound=Base)
 
 
 class BaseRepository(Generic[ModelType]):
-    """
-    Base repository with generic CRUD operations.
-    All repositories should inherit from this class.
-    """
 
     def __init__(self, model: Type[ModelType], db: Session):
         self.model = model
@@ -31,10 +26,8 @@ class BaseRepository(Generic[ModelType]):
         return result.scalar_one_or_none()
 
     def get_all(self,skip: int = 0,limit: int = 100,**filters) -> List[ModelType]:
-        """Get all records with pagination and filters."""
         stmt = select(self.model)
 
-        # Apply filters
         for key, value in filters.items():
             if value is not None:
                 if hasattr(self.model, key):
@@ -68,7 +61,6 @@ class BaseRepository(Generic[ModelType]):
         return True
 
     def count(self, **filters) -> int:
-        """Count records with optional filters."""
         stmt = select(self.model)
 
         for key, value in filters.items():

@@ -1,53 +1,39 @@
-# ============================================
-# CAMPUSOS - SCHEMAS
-# ============================================
-"""
-Pydantic schemas for request/response validation.
-Export all schemas for clean imports.
-"""
-
-# Auth
-from .auth import (
+from .auth_schemas import (
     UserLogin,
     UserRegister,
     Token,
     ChangePassword,
 )
 
-# User
-from .user import (
+from .user_schemas import (
     UserBase,
     UserCreate,
     UserUpdate,
     UserResponse,
 )
 
-# Department
-from .department import (
+from .department_schemas import (
     DepartmentBase,
     DepartmentCreate,
     DepartmentUpdate,
     DepartmentResponse,
 )
 
-# Notice
-from .notice import (
+from .notice_schemas import (
     NoticeBase,
     NoticeCreate,
     NoticeUpdate,
     NoticeResponse,
 )
 
-# Assignment
-from .assignment import (
+from .assignment_schemas import (
     AssignmentBase,
     AssignmentCreate,
     AssignmentUpdate,
     AssignmentResponse,
 )
 
-# Notification
-from .notification import (
+from .notification_schemas import (
     NotificationBase,
     NotificationCreate,
     NotificationUpdate,
@@ -56,32 +42,31 @@ from .notification import (
 )
 
 __all__ = [
-    # Auth
     "UserLogin",
     "UserRegister",
     "Token",
     "ChangePassword",
-    # User
+
     "UserBase",
     "UserCreate",
     "UserUpdate",
     "UserResponse",
-    # Department
+
     "DepartmentBase",
     "DepartmentCreate",
     "DepartmentUpdate",
     "DepartmentResponse",
-    # Notice
+
     "NoticeBase",
     "NoticeCreate",
     "NoticeUpdate",
     "NoticeResponse",
-    # Assignment
+
     "AssignmentBase",
     "AssignmentCreate",
     "AssignmentUpdate",
     "AssignmentResponse",
-    # Notification
+    
     "NotificationBase",
     "NotificationCreate",
     "NotificationUpdate",

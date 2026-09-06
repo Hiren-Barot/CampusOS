@@ -2,8 +2,8 @@ from typing import Optional, List
 from sqlalchemy.orm import Session
 from sqlalchemy import select, desc, func
 
-from src.backend.app.models.notification_model import Notification
-from src.backend.app.repositories.base_repository import BaseRepository
+from app.models.notification_model import Notification
+from app.repositories.base_repository import BaseRepository
 
 
 class NotificationRepository(BaseRepository[Notification]):
@@ -12,7 +12,6 @@ class NotificationRepository(BaseRepository[Notification]):
         super().__init__(Notification, db)
 
     def get_by_user(self, user_id: int) -> List[Notification]:
-        """Get all notifications for a specific user."""
         stmt = select(Notification).where(
             Notification.user_id == user_id
         ).order_by(desc(Notification.created_at))
@@ -20,7 +19,6 @@ class NotificationRepository(BaseRepository[Notification]):
         return result.scalars().all()
 
     def get_unread_by_user(self, user_id: int) -> List[Notification]:
-        """Get all unread notifications for a specific user."""
         stmt = select(Notification).where(
             Notification.user_id == user_id,
             Notification.is_read == False
@@ -29,7 +27,6 @@ class NotificationRepository(BaseRepository[Notification]):
         return result.scalars().all()
 
     def get_unread_count(self, user_id: int) -> int:
-        """Get count of unread notifications for a user."""
         stmt = select(func.count()).select_from(Notification).where(
             Notification.user_id == user_id,
             Notification.is_read == False
@@ -38,7 +35,6 @@ class NotificationRepository(BaseRepository[Notification]):
         return result.scalar() or 0
 
     def mark_as_read(self, notification_id: int) -> bool:
-        """Mark a specific notification as read."""
         notification = self.get(notification_id)
         if not notification:
             return False
@@ -47,7 +43,6 @@ class NotificationRepository(BaseRepository[Notification]):
         return True
 
     def mark_all_as_read(self, user_id: int) -> int:
-        """Mark all notifications for a user as read."""
         stmt = select(Notification).where(
             Notification.user_id == user_id,
             Notification.is_read == False
@@ -64,7 +59,6 @@ class NotificationRepository(BaseRepository[Notification]):
         return count
 
     def get_recent_by_user(self, user_id: int, limit: int = 10) -> List[Notification]:
-        """Get most recent notifications for a user."""
         stmt = select(Notification).where(
             Notification.user_id == user_id
         ).order_by(desc(Notification.created_at)).limit(limit)
