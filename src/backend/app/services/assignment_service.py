@@ -16,119 +16,78 @@ class AssignmentService:
         self.user_repo = UserRepository(db)
         self.notification_service = NotificationService(db)
 
-    def create_assignment(
-        self,
-        assignment_data: AssignmentCreate,
-        faculty_id: int
-    ) -> Assignment:
+    def _enrich(self, a: Assignment) -> dict:
+        faculty = self.user_repo.get(a.faculty_id)
+        return {
+            "id": a.id,
+            "title": a.title,
+            "description": a.description,
+            "department_id": a.department_id,
+            "faculty_id": a.faculty_id,
+            "faculty_name": faculty.full_name if faculty else "Unknown",
+            "deadline": a.deadline,
+            "created_at": a.created_at,
+            "updated_at": a.updated_at,
+        }
+
+    def create_assignment(self, assignment_data: AssignmentCreate, faculty_id: int) -> dict:
         assignment = self.assignment_repo.create(
-            **assignment_data.model_dump(),
+            title=assignment_data.title,
+            description=assignment_data.description,
+            department_id=assignment_data.department_id,
+            deadline=assignment_data.deadline,
             faculty_id=faculty_id,
         )
 
-        students = self.user_repo.get_students_by_department(
-            assignment_data.department_id
-        )
-        for student in students:
-            self.notification_service.create_notification(
-                user_id=student.id,
-                title=f"New Assignment: {assignment_data.title}",
-                message=f"Due: {assignment_data.deadline.strftime('%Y-%m-%d %H:%M')}",
-                type="assignment",
-                related_id=assignment.id,
-            )
+        if assignment_data.department_id:
+            students = self.user_repo.get_students_by_department(assignment_data.department_id)
+            for student in students:
+                self.notification_service.create_notification(
+                    user_id=student.id,
+                    title=f"New Assignment: {assignment.title}",
+                    message=f"Due: {assignment.deadline.strftime('%Y-%m-%d %H:%M')}",
+                    type="assignment",
+                    related_id=assignment.id,
+                )
 
-        return assignment
+        return self._enrich(assignment)
 
-    def get_assignment(self, assignment_id: int) -> Optional[Assignment]:
-        return self.assignment_repo.get(assignment_id)
+    def get_assignment(self, assignment_id: int) -> Optional[dict]:
+        a = self.assignment_repo.get(assignment_id)
+        return self._enrich(a) if a else None
 
-    def get_all_assignments(
-        self,
-        skip: int = 0,
-        limit: int = 100
-    ) -> List[Assignment]:
-        return self.assignment_repo.get_all(skip=skip, limit=limit)
+    def get_all_assignments(self, skip: int = 0, limit: int = 100):
+        assignments = self.assignment_repo.get_all(skip=skip, limit=limit)
+        return [self._enrich(a) for a in assignments]
 
-    def get_assignments_by_department(self, department_id: int) -> List[Assignment]:
-        return self.assignment_repo.get_by_department(department_id)
+    def get_assignments_by_department(self, department_id: int):
+        assignments = self.assignment_repo.get_by_department(department_id)
+        return [self._enrich(a) for a in assignments]
 
-    def get_assignments_by_faculty(self, faculty_id: int) -> List[Assignment]:
-        return self.assignment_repo.get_by_faculty(faculty_id)
+    def get_assignments_by_faculty(self, faculty_id: int):
+        assignments = self.assignment_repo.get_by_faculty(faculty_id)
+        return [self._enrich(a) for a in assignments]
 
-    def get_upcoming_assignments(
-        self,
-        department_id: Optional[int] = None
-    ) -> List[Assignment]:
-        return self.assignment_repo.get_upcoming(department_id)
+    def get_upcoming_assignments(self, department_id=None):
+        assignments = self.assignment_repo.get_upcoming(department_id)
+        return [self._enrich(a) for a in assignments]
 
-    def get_expired_assignments(
-        self,
-        department_id: Optional[int] = None
-    ) -> List[Assignment]:
-        return self.assignment_repo.get_expired(department_id)
+    def get_expired_assignments(self, department_id=None):
+        assignments = self.assignment_repo.get_expired(department_id)
+        return [self._enrich(a) for a in assignments]
 
-    def get_recent_assignments(self, limit: int = 10) -> List[Assignment]:
-        return self.assignment_repo.get_recent(limit)
+    def get_recent_assignments(self, limit: int = 10):
+        assignments = self.assignment_repo.get_recent(limit)
+        return [self._enrich(a) for a in assignments]
 
-    def update_assignment(
-        self,
-        assignment_id: int,
-        assignment_data: AssignmentUpdate
-    ) -> Optional[Assignment]:
-        update_data = assignment_data.model_dump(exclude_unset=True)
-        return self.assignment_repo.update(assignment_id, **update_data)
+    def update_assignment(self, assignment_id: int, data: AssignmentUpdate):
+        update_data = data.model_dump(exclude_unset=True)
+        a = self.assignment_repo.update(assignment_id, **update_data)
+        return self._enrich(a) if a else None
 
     def delete_assignment(self, assignment_id: int) -> bool:
         return self.assignment_repo.delete(assignment_id)
 
-    def search_assignments(self, query: str) -> List[Assignment]:
-        return self.assignment_repo.search_assignments(query)
-
-    def get_department_assignments_with_author(
-        self,
-        department_id: int
-    ) -> List[dict]:
-        assignments = self.assignment_repo.get_by_department(department_id)
-        result = []
-
-        for assignment in assignments:
-            faculty = self.user_repo.get(assignment.faculty_id)
-            result.append({
-                "id": assignment.id,
-                "title": assignment.title,
-                "description": assignment.description,
-                "deadline": assignment.deadline,
-                "created_at": assignment.created_at,
-                "updated_at": assignment.updated_at,
-                "faculty_id": assignment.faculty_id,
-                "faculty_name": faculty.full_name if faculty else "Unknown",
-            })
-
-        return result
-
-    def can_edit_assignment(self, assignment_id: int, user_id: int) -> bool:
-        assignment = self.assignment_repo.get(assignment_id)
-        if not assignment:
-            return False
-
-        user = self.user_repo.get(user_id)
-        if not user:
-            return False
-
-        if user.role == "admin":
-            return True
-
-        if user.role == "principal":
-            return True
-
-        if user.role == "hod" and user.department_id == assignment.department_id:
-            return True
-
-        if user.role == "faculty" and user.id == assignment.faculty_id:
-            return True
-
-        return False
-
-    def can_delete_assignment(self, assignment_id: int, user_id: int) -> bool:
-        return self.can_edit_assignment(assignment_id, user_id)
+    def search_assignments(self, query: str):
+        assignments = self.assignment_repo.search_assignments(query)
+        return [self._enrich(a) for a in assignments]

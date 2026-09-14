@@ -22,7 +22,10 @@ class User(Base):
     hashed_password: Mapped[str] = mapped_column(String, nullable=False)
     full_name: Mapped[str] = mapped_column(String, nullable=False)
     role: Mapped[str] = mapped_column(String, nullable=False, default="student")
-    department_id: Mapped[Optional[int]] = mapped_column(ForeignKey("departments.id"), nullable=True)
+    department_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("departments.id", use_alter=True, name="fk_users_department_id"),
+        nullable=True
+    )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     must_change_password: Mapped[bool] = mapped_column(Boolean, default=True)
     phone: Mapped[Optional[str]] = mapped_column(String, nullable=True)

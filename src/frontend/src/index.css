@@ -1,0 +1,37 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-paper: 250 248 243;
+  --color-paper-raised: 255 255 255;
+  --color-ink: 27 36 48;
+  --color-slate: 92 107 122;
+  --color-hairline: 228 223 212;
+  --color-urgent: 196 67 43;
+  --color-result: 74 124 89;
+  --color-event: 184 134 46;
+}
+
+.dark {
+  --color-paper: 18 21 27;
+  --color-paper-raised: 26 31 39;
+  --color-ink: 237 235 229;
+  --color-slate: 148 158 168;
+  --color-hairline: 45 52 63;
+  --color-urgent: 224 96 74;
+  --color-result: 106 163 122;
+  --color-event: 209 163 84;
+}
+
+body {
+  background: rgb(var(--color-paper));
+  color: rgb(var(--color-ink));
+  font-family: "Inter", sans-serif;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+::selection {
+  background: rgb(var(--color-urgent));
+  color: #fff;
+}

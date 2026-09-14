@@ -20,7 +20,10 @@ class Department(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     name: Mapped[str] = mapped_column(String, nullable=False)
     code: Mapped[str] = mapped_column(String, unique=True, nullable=False)
-    hod_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    hod_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("users.id", use_alter=True, name="fk_departments_hod_id"),
+        nullable=True
+    )    
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
 
     

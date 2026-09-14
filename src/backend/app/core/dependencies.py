@@ -120,23 +120,16 @@ def check_user_in_department(user: User, department_id: int) -> bool:
 
 
 def check_user_can_manage_user(target_user: User, current_user: User) -> bool:
-    if current_user.role == "admin":
-        return True
-    
-    if current_user.role == "principal":
-        return target_user.role != "admin"
-    
-    if current_user.role == "hod":
-        if target_user.role in ["admin", "principal", "hod"]:
-            return False
-        return target_user.department_id == current_user.department_id
-    
-    if current_user.role == "faculty":
-        if target_user.role != "student":
-            return False
-        return target_user.department_id == current_user.department_id
-    
-    return False
+    ROLE_RANK = {
+        "student": 1,
+        "faculty": 2,
+        "hod": 3,
+        "principal": 4,
+        "admin": 5,
+    }
+    if target_user.id == current_user.id:
+        return False
+    return ROLE_RANK.get(current_user.role, 0) > ROLE_RANK.get(target_user.role, 0)
 
 
 def check_user_can_view_user(target_user: User, current_user: User) -> bool:

@@ -18,7 +18,9 @@ class Notice(Base):
     id: Mapped[int] = mapped_column(primary_key=True, index=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), nullable=False)
+    department_id: Mapped[Optional[int]] = mapped_column(
+        ForeignKey("departments.id"), nullable=True
+    )
     faculty_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     is_published: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())

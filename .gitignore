@@ -1,63 +1,21 @@
-# ============================================
-# PYTHON
-# ============================================
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
+.venv/
 venv/
 env/
-ENV/
-.venv/
-envs/
-.env
-.env.local
-.env.*.local
-*.log
-*.pid
-*.seed
-*.pid.lock
 
-# ============================================
-# DATABASE
-# ============================================
-*.db
-*.sqlite
-*.sqlite3
-*.db-journal
-
-# ============================================
-# IDE / EDITOR
-# ============================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+
 .DS_Store
-*.code-workspace
+Thumbs.db
+Desktop.ini
 
-# ============================================
-# TESTING
-# ============================================
-.pytest_cache/
-.coverage
-htmlcov/
-.tox/
-.mypy_cache/
-.ruff_cache/
+*.log
+logs/
 
-# ============================================
-# MIGRATIONS
-# ============================================
-alembic/versions/*.py
-!alembic/versions/__init__.py
-
-# ============================================
-# PROJECT SPECIFIC
-# ============================================
-*.pem
-*.key
-*.crt
-.terraform/
+tmp/
+temp/
+output.txt
+scratch.*
