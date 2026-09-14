@@ -18,4 +18,5 @@ logs/
 tmp/
 temp/
 output.txt
-scratch.*src/backend/tests/
+scratch.*
+src/backend/tests/

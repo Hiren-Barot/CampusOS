@@ -70,4 +70,5 @@ Desktop.ini
 .mypy_cache/
 .dmypy.json
 dmypy.json
-.ruff_cache/src/backend/tests/
+.ruff_cache/
+tests/
