@@ -6,6 +6,15 @@ import Modal from "../common/Modal.jsx";
 import { dateInputToISO, isoToDateInput } from "../../utils/dateUtils";
 import useAuth from "../../hooks/useAuth";
 
+// Today's date as YYYY-MM-DD (local time) — used for min attribute + validation
+function getTodayInputValue() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 export default function AssignmentForm({ onClose, onSubmit, initialData, mode }) {
   const { user } = useAuth();
   const [title, setTitle] = useState(initialData?.title || "");
@@ -15,11 +24,17 @@ export default function AssignmentForm({ onClose, onSubmit, initialData, mode })
   const [submitting, setSubmitting] = useState(false);
   const isEdit = mode === "edit";
   const titleId = "assignment-form-title";
+  const today = getTodayInputValue();
 
   function validate() {
     const next = {};
     if (!title.trim()) next.title = "Title is required";
-    if (!dueDateInput) next.dueDateInput = "Due date is required";
+    if (!dueDateInput) {
+      next.dueDateInput = "Due date is required";
+    } else if (dueDateInput < today) {
+      // String comparison works for YYYY-MM-DD format
+      next.dueDateInput = "Due date cannot be in the past";
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -63,7 +78,14 @@ export default function AssignmentForm({ onClose, onSubmit, initialData, mode })
           </div>
           <div>
             <label htmlFor="assignment-due-date" className="font-mono text-[10px] tracking-wide block mb-1 text-slate">DUE DATE</label>
-            <input id="assignment-due-date" type="date" className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${errors.dueDateInput ? "border-urgent" : "border-hairline"}`} value={dueDateInput} onChange={(e) => setDueDateInput(e.target.value)} />
+            <input
+              id="assignment-due-date"
+              type="date"
+              min={today}
+              className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${errors.dueDateInput ? "border-urgent" : "border-hairline"}`}
+              value={dueDateInput}
+              onChange={(e) => setDueDateInput(e.target.value)}
+            />
             {errors.dueDateInput && <p className="text-urgent text-[11px] mt-1">{errors.dueDateInput}</p>}
           </div>
         </div>

@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { getMyNotices, createNotice, updateNotice, deleteNotice } from "../../services/noticeService";
 import { getAssignments, createAssignment, updateAssignment, deleteAssignment } from "../../services/assignmentService";
 import { getUsersByRole } from "../../services/userService";
+import useAuth from "../../hooks/useAuth";
 import StatCard from "./StatCard.jsx";
 import NoticeList from "../notices/NoticeList.jsx";
 import NoticeForm from "../notices/NoticeForm.jsx";
@@ -12,6 +13,7 @@ import AssignmentForm from "../assignments/AssignmentForm.jsx";
 import Spinner from "../common/Spinner.jsx";
 
 export default function FacultyDashboard() {
+  const { user } = useAuth();
   const [notices, setNotices] = useState([]);
   const [assignments, setAssignments] = useState([]);
   const [students, setStudents] = useState([]);
@@ -19,6 +21,15 @@ export default function FacultyDashboard() {
   const [loadError, setLoadError] = useState("");
   const [modal, setModal] = useState(null);
   const [editing, setEditing] = useState(null);
+
+  // ✅ Only the author can edit/delete
+  const isAuthor = (item) =>
+    user?.id != null &&
+    item?.faculty_id != null &&
+    String(item.faculty_id) === String(user.id);
+
+  // ✅ Faculty sees only their own assignments
+  const myAssignments = assignments.filter(isAuthor);
 
   function refresh() {
     setLoading(true);
@@ -123,7 +134,7 @@ export default function FacultyDashboard() {
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
         <StatCard label="MY NOTICES" value={notices.length} />
-        <StatCard label="MY ASSIGNMENTS" value={assignments.length} />
+        <StatCard label="MY ASSIGNMENTS" value={myAssignments.length} />
         <StatCard label="DEPT. STUDENTS" value={students.length} />
       </div>
 
@@ -144,8 +155,8 @@ export default function FacultyDashboard() {
           <div className="p-4">
             <NoticeList
               notices={notices}
-              canDelete
-              canEdit
+              canDelete={isAuthor}
+              canEdit={isAuthor}
               onEdit={(n) => setEditing({ type: "notice", item: n })}
               onDelete={handleDeleteNotice}
             />
@@ -167,9 +178,9 @@ export default function FacultyDashboard() {
           </div>
           <div className="p-4">
             <AssignmentList
-              assignments={assignments}
-              canDelete
-              canEdit
+              assignments={myAssignments}
+              canEdit={isAuthor}
+              canDelete={isAuthor}
               onEdit={(a) => setEditing({ type: "assignment", item: a })}
               onDelete={handleDeleteAssignment}
             />

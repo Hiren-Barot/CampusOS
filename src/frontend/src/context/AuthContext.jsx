@@ -1,4 +1,3 @@
-import React from "react";
 import { createContext, useState, useEffect } from "react";
 import * as authService from "../services/authService";
 
@@ -29,7 +28,8 @@ export function AuthProvider({ children }) {
   }
 
   function logout() {
-    authService.logout();
+    document.documentElement.classList.remove("dark");
+    localStorage.setItem("theme", "light");
     setUser(null);
   }
 

@@ -1,16 +1,19 @@
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { Search, Menu, Sun, Moon } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import useAuth from "../../hooks/useAuth";
 import NotificationBell from "../notifications/NotificationBell.jsx";
 
-const INITIALS = {
-  student: "ST", faculty: "FA", hod: "HD", principal: "PR", admin: "AD",
-};
-
 const THEME_KEY = "campos_theme";
+
+// Generate initials from a full name (e.g. "Vyom Dangi" → "VD")
+function getInitials(name) {
+  if (!name) return "?";
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
 
 export default function Navbar({ onMenuClick = () => {} }) {
   const { user } = useAuth();
@@ -35,6 +38,9 @@ export default function Navbar({ onMenuClick = () => {} }) {
     if (!trimmed) return;
     navigate(`/notices?search=${encodeURIComponent(trimmed)}`);
   }
+
+  // Prefer full_name, fall back to name, then email prefix
+  const displayName = user?.full_name || user?.name || user?.email?.split("@")[0] || "User";
 
   return (
     <div className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-hairline bg-paper-raised">
@@ -71,10 +77,10 @@ export default function Navbar({ onMenuClick = () => {} }) {
           aria-label="Go to profile"
         >
           <div className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-[11px] font-medium text-white bg-[#1B2430]">
-            {INITIALS[user?.role] || "?"}
+            {getInitials(displayName)}
           </div>
-          <span className="hidden sm:inline text-[13px] font-medium text-ink capitalize">
-            {user?.role}
+          <span className="hidden sm:inline text-[13px] font-medium text-ink">
+            {displayName}
           </span>
         </Link>
       </div>

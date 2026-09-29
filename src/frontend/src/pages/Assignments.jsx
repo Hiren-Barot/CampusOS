@@ -3,13 +3,15 @@ import { Plus, AlertTriangle, Search } from "lucide-react";
 import toast from "react-hot-toast";
 import { getAssignments, createAssignment, updateAssignment, deleteAssignment } from "../services/assignmentService";
 import useRole from "../hooks/useRole";
+import useAuth from "../hooks/useAuth";
 import AssignmentList from "../components/assignments/AssignmentList.jsx";
 import AssignmentForm from "../components/assignments/AssignmentForm.jsx";
 import AssignmentDetails from "../components/assignments/AssignmentDetails.jsx";
 import Spinner from "../components/common/Spinner.jsx";
 
 export default function Assignments() {
-  const { canCreateAssignment } = useRole();
+  const { canCreateAssignment, role } = useRole();
+  const { user } = useAuth();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -29,6 +31,23 @@ export default function Assignments() {
 
   useEffect(refresh, []);
 
+  // ✅ Only the author can edit/delete
+  const isAuthor = (a) =>
+    user?.id != null &&
+    a?.faculty_id != null &&
+    String(a.faculty_id) === String(user.id);
+
+  // ✅ Faculty only sees their own assignments. Others see department-wide.
+  const visibleByRole =
+    role === "faculty" ? assignments.filter(isAuthor) : assignments;
+
+  const q = search.trim().toLowerCase();
+  const filtered = q
+    ? visibleByRole.filter((a) =>
+        [a.title, a.by].filter(Boolean).join(" ").toLowerCase().includes(q)
+      )
+    : visibleByRole;
+
   async function handleEdit(id, data) {
     await updateAssignment(id, data);
     setEditing(null);
@@ -36,23 +55,16 @@ export default function Assignments() {
   }
 
   async function handleDelete(id, title) {
-  const displayTitle = title || "this assignment";
-  if (!window.confirm(`Delete "${displayTitle}"? This can't be undone.`)) return;
-  try {
-    await deleteAssignment(id);
-    toast.success("Assignment deleted");
-    refresh();
-  } catch (err) {
-    toast.error(err.message || "Could not delete assignment");
+    const displayTitle = title || "this assignment";
+    if (!window.confirm(`Delete "${displayTitle}"? This can't be undone.`)) return;
+    try {
+      await deleteAssignment(id);
+      toast.success("Assignment deleted");
+      refresh();
+    } catch (err) {
+      toast.error(err.message || "Could not delete assignment");
+    }
   }
-}
-
-  const q = search.trim().toLowerCase();
-  const filtered = q
-    ? assignments.filter((a) =>
-        [a.title, a.by].filter(Boolean).join(" ").toLowerCase().includes(q)
-      )
-    : assignments;
 
   return (
     <div>
@@ -112,8 +124,8 @@ export default function Assignments() {
       ) : (
         <AssignmentList
           assignments={filtered}
-          canDelete={canCreateAssignment}
-          canEdit={canCreateAssignment}
+          canEdit={isAuthor}
+          canDelete={isAuthor}
           onEdit={setEditing}
           onDelete={(id) => handleDelete(id, assignments.find((a) => a.id === id)?.title)}
           onSelect={setSelected}

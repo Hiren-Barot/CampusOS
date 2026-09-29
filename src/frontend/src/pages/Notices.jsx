@@ -8,6 +8,7 @@ import {
   deleteNotice,
 } from "../services/noticeService";
 import useRole from "../hooks/useRole";
+import useAuth from "../hooks/useAuth";
 import NoticeList from "../components/notices/NoticeList.jsx";
 import NoticeForm from "../components/notices/NoticeForm.jsx";
 import NoticeDetails from "../components/notices/NoticeDetails.jsx";
@@ -15,6 +16,7 @@ import Spinner from "../components/common/Spinner.jsx";
 
 export default function Notices() {
   const { canCreateNotice } = useRole();
+  const { user } = useAuth();
   const [notices, setNotices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -40,16 +42,29 @@ export default function Notices() {
   }
 
   async function handleDelete(id, title) {
-  const displayTitle = title || "this notice";
-  if (!window.confirm(`Delete "${displayTitle}"? This can't be undone.`)) return;
-  try {
-    await deleteNotice(id);
-    toast.success("Notice deleted");
-    refresh();
-  } catch (err) {
-    toast.error(err.message || "Could not delete notice");
+    const displayTitle = title || "this notice";
+    if (!window.confirm(`Delete "${displayTitle}"? This can't be undone.`)) return;
+    try {
+      await deleteNotice(id);
+      toast.success("Notice deleted");
+      refresh();
+    } catch (err) {
+      toast.error(err.message || "Could not delete notice");
+    }
   }
-}
+
+  // ✅ Only the original author can edit or delete
+  const isAuthor = (notice) => {
+    const authorId =
+      notice.faculty_id ??
+      notice.author_id ??
+      notice.created_by ??
+      notice.user_id ??
+      notice.user?.id;
+
+    // Compare loosely to handle string vs number mismatch
+    return user?.id != null && authorId != null && String(authorId) === String(user.id);
+  };
 
   return (
     <div>
@@ -97,8 +112,8 @@ export default function Notices() {
       ) : (
         <NoticeList
           notices={notices}
-          canDelete={canCreateNotice}
-          canEdit={canCreateNotice}
+          canEdit={isAuthor}
+          canDelete={isAuthor}
           onEdit={setEditing}
           onDelete={(id) => handleDelete(id, notices.find((n) => n.id === id)?.title)}
           onSelect={setSelected}

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../../hooks/useAuth";
 
@@ -11,6 +11,12 @@ export default function Login() {
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.classList.remove("dark");
+    const saved = localStorage.getItem("theme");
+    if (!saved) localStorage.setItem("theme", "light");
+  }, []);
 
   function validate() {
     const next = {};
@@ -85,11 +91,8 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-[12.5px] text-slate mt-5">
-          New student?{" "}
-          <Link to="/register" className="text-urgent font-medium">
-            Create an account
-          </Link>
+        <p className="text-[12.5px] text-slate mt-5 text-center">
+          Contact your department admin if you need an account.
         </p>
       </div>
     </div>

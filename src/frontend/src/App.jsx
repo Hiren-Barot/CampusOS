@@ -1,7 +1,6 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Login from "./components/auth/Login.jsx";
-import Register from "./components/auth/Register.jsx";
 import Layout from "./components/common/Layout.jsx";
 import PrivateRoute from "./components/common/PrivateRoute.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
@@ -15,7 +14,8 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+      {/* Registration is disabled – redirect to login */}
+      <Route path="/register" element={<Navigate to="/login" replace />} />
 
       <Route
         element={

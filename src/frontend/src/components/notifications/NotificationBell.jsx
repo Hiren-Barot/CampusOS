@@ -1,5 +1,4 @@
-import React from "react";
-import { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Bell } from "lucide-react";
 import { getNotifications, getUnreadCount, markAllAsRead } from "../../services/notificationService";
 import NotificationPanel from "./NotificationPanel.jsx";
@@ -35,11 +34,18 @@ export default function NotificationBell() {
   function handleToggle() {
     setOpen((o) => {
       const next = !o;
+
       if (next) {
         markAllAsRead()
-          .then(() => setUnreadCount(0))
+          .then(() => {
+            setUnreadCount(0);
+            setNotifications((prev) =>
+              prev.map((n) => ({ ...n, is_read: true }))
+            );
+          })
           .catch(() => {});
       }
+
       return next;
     });
   }

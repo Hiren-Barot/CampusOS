@@ -8,6 +8,29 @@ import UserForm from "../components/users/UserForm.jsx";
 import UserDetails from "../components/users/UserDetails.jsx";
 import Spinner from "../components/common/Spinner.jsx";
 
+// Tabs shown per logged-in role (no "All")
+const TABS_BY_ROLE = {
+  admin: [
+    { key: "faculty", label: "Faculty" },
+    { key: "student", label: "Students" },
+    { key: "hod", label: "HODs" },
+    { key: "principal", label: "Principals" },
+    { key: "admin", label: "Admins" },
+  ],
+  principal: [
+    { key: "faculty", label: "Faculty" },
+    { key: "student", label: "Students" },
+    { key: "hod", label: "HODs" },
+  ],
+  hod: [
+    { key: "faculty", label: "Faculty" },
+    { key: "student", label: "Students" },
+  ],
+  faculty: [
+    { key: "student", label: "Students" },
+  ],
+};
+
 export default function Users() {
   const { role, canManageUsers, canManageUser, creatableRoles } = useRole();
   const [users, setUsers] = useState([]);
@@ -17,6 +40,9 @@ export default function Users() {
   const [modal, setModal] = useState(false);
   const [selected, setSelected] = useState(null);
   const [editing, setEditing] = useState(null);
+
+  const tabs = TABS_BY_ROLE[role] || TABS_BY_ROLE.faculty;
+  const [activeTab, setActiveTab] = useState(tabs[0].key);
 
   function refresh() {
     setLoading(true);
@@ -29,12 +55,15 @@ export default function Users() {
 
   useEffect(refresh, []);
 
+  // Filter by tab first, then by search
   const q = search.trim().toLowerCase();
-  const filtered = q
-    ? users.filter((u) =>
-        [u.full_name, u.name, u.email].filter(Boolean).join(" ").toLowerCase().includes(q)
-      )
-    : users;
+  const filtered = users
+    .filter((u) => u.role === activeTab)
+    .filter((u) =>
+      q
+        ? [u.full_name, u.name, u.email].filter(Boolean).join(" ").toLowerCase().includes(q)
+        : true
+    );
 
   async function handleEdit(id, data) {
     const original = users.find((u) => u.id === id);
@@ -80,6 +109,25 @@ export default function Users() {
           </button>
         )}
       </div>
+
+      {/* Filter tabs — only shown when more than one tab is available */}
+      {tabs.length > 1 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {tabs.map((t) => (
+            <button
+              key={t.key}
+              onClick={() => setActiveTab(t.key)}
+              className={`font-mono text-[11px] font-medium px-3 py-[6px] rounded-sm border transition-colors ${
+                activeTab === t.key
+                  ? "bg-[#1B2430] text-white border-[#1B2430]"
+                  : "bg-paper-raised text-slate border-hairline hover:text-ink"
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mb-5 relative max-w-md">
         <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate" />

@@ -79,3 +79,5 @@ export async function changePassword(currentPassword, newPassword) {
     throw new Error(getErrorMessage(error));
   }
 }
+
+export { setStoredUser };

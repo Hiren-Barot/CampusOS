@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import PropTypes from "prop-types";
 import { Trash2, Pencil, Megaphone } from "lucide-react";
 import { timeAgo } from "../../utils/dateUtils";
+import useRole from "../../hooks/useRole";
+import { getDepartments } from "../../services/departmentService";
 
 const DEFAULT_TAG_STYLE = {
   pin: "bg-event",
@@ -17,12 +19,44 @@ export default function NoticeList({
   onEdit = () => {},
   onSelect = undefined,
 }) {
+  const { role } = useRole();
+  const canPost = ["faculty", "hod", "principal", "admin"].includes(role);
+
+  // ✅ Only principal/admin see the department badge
+  const canSeeDept = role === "principal" || role === "admin";
+
+  // ✅ Auto-refresh tick — updates "time ago" every 30 seconds
+  const [, setTick] = useState(0);
+  useEffect(() => {
+    const id = setInterval(() => setTick((t) => t + 1), 30_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const [departments, setDepartments] = useState([]);
+
+  useEffect(() => {
+    if (!canSeeDept) return;
+    getDepartments()
+      .then((data) => setDepartments(Array.isArray(data) ? data : []))
+      .catch(() => setDepartments([]));
+  }, [canSeeDept]);
+
+  const deptMap = useMemo(() => {
+    const map = {};
+    departments.forEach((d) => {
+      map[d.id] = d.code || d.name || `DEPT ${d.id}`;
+    });
+    return map;
+  }, [departments]);
+
   if (notices.length === 0) {
     return (
       <div className="text-center py-10">
         <Megaphone className="mx-auto text-slate/30 mb-2" size={32} />
         <p className="text-[13px] text-slate">
-          No notices yet — post one to get started!
+          {canPost
+            ? "No notices yet — post one to get started!"
+            : "No notices posted yet."}
         </p>
       </div>
     );
@@ -32,6 +66,15 @@ export default function NoticeList({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {notices.map((n) => {
         const style = DEFAULT_TAG_STYLE;
+
+        const showEdit = typeof canEdit === "function" ? canEdit(n) : canEdit;
+        const showDelete = typeof canDelete === "function" ? canDelete(n) : canDelete;
+
+        const deptLabel =
+          n.department_id == null
+            ? "ALL DEPTS"
+            : deptMap[n.department_id] || `DEPT ${n.department_id}`;
+
         return (
           <div
             key={n.id}
@@ -44,14 +87,21 @@ export default function NoticeList({
               className={`absolute -top-[6px] left-5 w-[10px] h-[10px] rounded-full shadow ${style.pin}`}
             />
             <div className="flex items-start justify-between mb-2">
-              <span
-                className={`inline-block font-mono text-[10px] font-medium tracking-wide px-2 py-[3px] rounded-sm ${style.bg} ${style.text}`}
-              >
-                NOTICE
-              </span>
-              {(canEdit || canDelete) && (
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-block font-mono text-[10px] font-medium tracking-wide px-2 py-[3px] rounded-sm ${style.bg} ${style.text}`}
+                >
+                  NOTICE
+                </span>
+                {canSeeDept && (
+                  <span className="inline-block font-mono text-[10px] font-medium tracking-wide px-2 py-[3px] rounded-sm bg-ink/5 text-slate border border-hairline">
+                    {deptLabel}
+                  </span>
+                )}
+              </div>
+              {(showEdit || showDelete) && (
                 <div className="flex items-center gap-2">
-                  {canEdit && (
+                  {showEdit && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -62,7 +112,7 @@ export default function NoticeList({
                       <Pencil size={13} className="text-slate" />
                     </button>
                   )}
-                  {canDelete && (
+                  {showDelete && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
@@ -97,12 +147,12 @@ NoticeList.propTypes = {
       title: PropTypes.string.isRequired,
       meta: PropTypes.string,
       createdAt: PropTypes.string,
-    }),
+      department_id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
+    })
   ).isRequired,
-  canDelete: PropTypes.bool,
-  canEdit: PropTypes.bool,
+  canDelete: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
+  canEdit: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onSelect: PropTypes.func,
 };
-
