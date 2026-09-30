@@ -39,7 +39,10 @@ class UserService:
             "created_at": user.created_at,
         }
 
-    def create_user(self, user_data: UserCreate) -> Tuple[Optional[User], Optional[str]]:
+    async def create_user(self, user_data: UserCreate) -> Tuple[Optional[User], Optional[str]]:
+
+        from backend.app.services.email_service import email_service
+
         existing_user = self.user_repo.get_by_email(user_data.email)
         if existing_user:
             return None, None
@@ -56,6 +59,18 @@ class UserService:
             is_active=True,
             must_change_password=True,
         )
+
+        try:
+            await email_service.send_welcome_email(
+                to_email=user.email,
+                full_name=user.full_name,
+                role=user.role,
+                temp_password=temp_password,
+            )
+        except Exception as e:
+            import logging
+            logging.error(f"Failed to send welcome email: {str(e)}")
+
         return user, temp_password
 
     def get_user(self, user_id: int) -> Optional[User]:

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../../hooks/useAuth";
 
@@ -20,8 +20,9 @@ export default function Login() {
 
   function validate() {
     const next = {};
-    if (!email.trim()) next.email = "Email is required";
-    else if (!/^\S+@\S+\.\S+$/.test(email)) next.email = "Enter a valid email";
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) next.email = "Email is required";
+    else if (!/^\S+@\S+\.\S+$/.test(trimmedEmail)) next.email = "Enter a valid email";
     if (!password) next.password = "Password is required";
     setFieldErrors(next);
     return Object.keys(next).length === 0;
@@ -63,7 +64,7 @@ export default function Login() {
             <input
               type="email"
               className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${fieldErrors.email ? "border-urgent" : "border-hairline"}`}
-              placeholder="you@gtu.ac.in"
+              placeholder="your.email@campusos.app"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoFocus

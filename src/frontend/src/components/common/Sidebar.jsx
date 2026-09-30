@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
 import {
-  LayoutGrid, Megaphone, ClipboardList, Users, User, Building2, LogOut, X,
+  LayoutGrid, Megaphone, ClipboardList, Users, User, Building2, LogOut, X, KeyRound,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import useRole from "../../hooks/useRole";
@@ -14,6 +14,7 @@ const ICON = {
   Users: Users,
   Departments: Building2,
   Profile: User,
+  "Change Password": KeyRound,
 };
 
 const ROUTE = {
@@ -23,6 +24,7 @@ const ROUTE = {
   Users: "/users",
   Departments: "/departments",
   Profile: "/profile",
+  "Change Password": "/change-password",
 };
 
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {

@@ -26,3 +26,6 @@ httpx==0.25.1
 
 # Utils
 python-dateutil==2.8.2
+
+aiosmtplib==3.0.1
+emails==0.6

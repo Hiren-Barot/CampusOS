@@ -72,3 +72,5 @@ Desktop.ini
 dmypy.json
 .ruff_cache/
 tests/
+
+.bak*.bak

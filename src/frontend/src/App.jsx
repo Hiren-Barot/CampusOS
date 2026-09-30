@@ -9,6 +9,7 @@ import Users from "./pages/Users.jsx";
 import Notices from "./pages/Notices.jsx";
 import Assignments from "./pages/Assignments.jsx";
 import Profile from "./pages/Profile.jsx";
+import ChangePassword from "./pages/ChangePassword.jsx";
 
 export default function App() {
   return (
@@ -44,6 +45,7 @@ export default function App() {
           }
         />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/change-password" element={<ChangePassword />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/dashboard" replace />} />

@@ -75,7 +75,6 @@ async def get_all_users(
 
     return users
 
-
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
@@ -100,7 +99,7 @@ async def create_user(
         raise HTTPException(status_code=400, detail="Department is required")
 
     service = UserService(db)
-    user, temp_password = service.create_user(user_data)
+    user, temp_password = await service.create_user(user_data) 
 
     if not user:
         raise HTTPException(status_code=400, detail="User with this email already exists")
@@ -108,7 +107,6 @@ async def create_user(
     response_data = service._enrich_user(user)
     response_data["temp_password"] = temp_password
     return response_data
-
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(

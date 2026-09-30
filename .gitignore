@@ -77,3 +77,6 @@ temp/
 logs/
 output.txt
 scratch.*
+
+.bak*
+.bak
