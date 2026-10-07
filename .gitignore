@@ -57,3 +57,5 @@ scratch.*
 .bak
 *.bak
 src.backup-before-pull/
+
+seed_files/

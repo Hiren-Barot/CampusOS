@@ -57,11 +57,6 @@ htmlcov/
 logs/
 output.txt
 
-seed_demo.py
-seed_full.py
-reset_passwords.py
-scripts/seed/
-
 alembic/versions/__pycache__/
 
 Thumbs.db
@@ -79,4 +74,4 @@ uploads/
 !uploads/
 !uploads/assignments/
 uploads/assignments/*
-!uploads/assignments/.gitkeep
+!uploads/assignments/.gitkeepseed_files/
