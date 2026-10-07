@@ -13,6 +13,7 @@ if TYPE_CHECKING:
     from .assignment_model import Assignment
     from .notification_model import Notification
     from .profile_model import Profile
+    from .query_model import Query
 
 
 class User(Base):
@@ -45,4 +46,10 @@ class User(Base):
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",
+    )
+
+    queries_asked: Mapped[list["Query"]] = relationship(
+        "Query",
+        foreign_keys="Query.student_id",
+        back_populates="student",
     )

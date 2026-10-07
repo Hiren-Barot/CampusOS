@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from app.models.user_model import User
     from app.models.notice_model import Notice
     from app.models.assignment_model import Assignment
-
+    from app.models.query_model import Query
 
 class Department(Base):
 
@@ -41,6 +41,11 @@ class Department(Base):
     assignments: Mapped[List["Assignment"]] = relationship(
         "Assignment",
         back_populates="department"
+    )
+
+    queries: Mapped[list["Query"]] = relationship(
+        "Query",
+        back_populates="department",
     )
     
     hod: Mapped[Optional["User"]] = relationship(

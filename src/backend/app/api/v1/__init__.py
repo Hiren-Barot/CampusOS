@@ -7,6 +7,7 @@ from .notice_routes import router as notice_router
 from .assignment_routes import router as assignment_router
 from .notifications_routes import router as notification_router
 from .search_routes import router as search_router
+from .query_routes import router as query_router
 
 router = APIRouter()
 
@@ -17,6 +18,6 @@ router.include_router(notice_router)
 router.include_router(assignment_router)
 router.include_router(notification_router)
 router.include_router(search_router)
+router.include_router(query_router)
 
 __all__ = ["router"]
-

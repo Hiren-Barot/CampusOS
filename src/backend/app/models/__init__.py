@@ -4,6 +4,7 @@ from .notice_model import Notice
 from .assignment_model import Assignment
 from .notification_model import Notification
 from .profile_model import Profile
+from .query_model import Query
 
 __all__ = [
     "User",
@@ -12,4 +13,5 @@ __all__ = [
     "Assignment",
     "Notification",
     "Profile",
+    "Query",
 ]
