@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Plus, AlertTriangle, Search } from "lucide-react";
 import toast from "react-hot-toast";
-import { getAssignments, createAssignment, updateAssignment, deleteAssignment } from "../services/assignmentService";
+import {
+  getAssignments,
+  createAssignment,
+  updateAssignment,
+  deleteAssignment,
+  downloadAssignmentFile,
+} from "../services/assignmentService";
 import useRole from "../hooks/useRole";
 import useAuth from "../hooks/useAuth";
 import AssignmentList from "../components/assignments/AssignmentList.jsx";
@@ -31,20 +37,22 @@ export default function Assignments() {
 
   useEffect(refresh, []);
 
-  // ✅ Only the author can edit/delete
   const isAuthor = (a) =>
     user?.id != null &&
     a?.faculty_id != null &&
     String(a.faculty_id) === String(user.id);
 
-  // ✅ Faculty only sees their own assignments. Others see department-wide.
   const visibleByRole =
     role === "faculty" ? assignments.filter(isAuthor) : assignments;
 
   const q = search.trim().toLowerCase();
   const filtered = q
     ? visibleByRole.filter((a) =>
-        [a.title, a.by].filter(Boolean).join(" ").toLowerCase().includes(q)
+        [a.title, a.faculty_name, a.by]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(q)
       )
     : visibleByRole;
 
@@ -63,6 +71,14 @@ export default function Assignments() {
       refresh();
     } catch (err) {
       toast.error(err.message || "Could not delete assignment");
+    }
+  }
+
+  async function handleDownload(assignment) {
+    try {
+      await downloadAssignmentFile(assignment.id, assignment.file_name);
+    } catch (err) {
+      toast.error(err.message || "Could not download file");
     }
   }
 
@@ -109,7 +125,13 @@ export default function Assignments() {
           onSubmit={(data) => handleEdit(editing.id, data)}
         />
       )}
-      {selected && <AssignmentDetails assignment={selected} onClose={() => setSelected(null)} />}
+      {selected && (
+        <AssignmentDetails
+          assignment={selected}
+          onClose={() => setSelected(null)}
+          onDownload={selected.has_file ? () => handleDownload(selected) : null}
+        />
+      )}
 
       {loading ? (
         <Spinner label="Loading assignments…" />
@@ -117,7 +139,10 @@ export default function Assignments() {
         <div role="alert" className="text-center py-10 border border-hairline rounded-sm bg-urgent/5">
           <AlertTriangle className="mx-auto text-urgent mb-2" size={28} />
           <p className="text-[13.5px] text-ink mb-3">{loadError}</p>
-          <button onClick={refresh} className="font-mono text-[11px] font-medium px-3 py-[6px] rounded-sm text-white bg-[#1B2430]">
+          <button
+            onClick={refresh}
+            className="font-mono text-[11px] font-medium px-3 py-[6px] rounded-sm text-white bg-[#1B2430]"
+          >
             Retry
           </button>
         </div>
@@ -129,6 +154,7 @@ export default function Assignments() {
           onEdit={setEditing}
           onDelete={(id) => handleDelete(id, assignments.find((a) => a.id === id)?.title)}
           onSelect={setSelected}
+          onDownload={handleDownload}
         />
       )}
     </div>

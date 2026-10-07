@@ -2,8 +2,26 @@ import { http, getErrorMessage } from "./api";
 
 export async function getAssignments() {
   try {
-    const response = await http.get("/assignments/");
-    return response.data.map(mapAssignment);
+    const response = await http.get("/assignments/?skip=0&limit=200");
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getMyAssignments() {
+  try {
+    const response = await http.get("/assignments/my");
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function getUpcomingAssignments() {
+  try {
+    const response = await http.get("/assignments/upcoming");
+    return response.data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -12,7 +30,7 @@ export async function getAssignments() {
 export async function getAssignmentById(id) {
   try {
     const response = await http.get(`/assignments/${id}`);
-    return mapAssignment(response.data);
+    return response.data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -20,13 +38,17 @@ export async function getAssignmentById(id) {
 
 export async function createAssignment(data) {
   try {
-    const response = await http.post("/assignments/", {
-      title: data.title,
-      description: data.description || "",
-      department_id: data.department_id,
-      deadline: data.dueDate,
+    const formData = new FormData();
+    formData.append("title", data.title);
+    if (data.description) formData.append("description", data.description);
+    formData.append("deadline", data.deadline);
+    if (data.department_id) formData.append("department_id", String(data.department_id));
+    if (data.file) formData.append("file", data.file);
+
+    const response = await http.post("/assignments/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
     });
-    return mapAssignment(response.data);
+    return response.data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -34,12 +56,8 @@ export async function createAssignment(data) {
 
 export async function updateAssignment(id, data) {
   try {
-    const response = await http.put(`/assignments/${id}`, {
-      title: data.title,
-      description: data.description,
-      deadline: data.dueDate,
-    });
-    return mapAssignment(response.data);
+    const response = await http.put(`/assignments/${id}`, data);
+    return response.data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
@@ -54,33 +72,31 @@ export async function deleteAssignment(id) {
   }
 }
 
-export async function getUpcomingAssignments() {
-  try {
-    const response = await http.get("/assignments/upcoming");
-    return response.data.map(mapAssignment);
-  } catch (error) {
-    throw new Error(getErrorMessage(error));
-  }
-}
-
 export async function searchAssignments(query) {
   try {
     const response = await http.get(`/assignments/search?q=${encodeURIComponent(query)}`);
-    return response.data.map(mapAssignment);
+    return response.data;
   } catch (error) {
     throw new Error(getErrorMessage(error));
   }
 }
 
-function mapAssignment(a) {
-  return {
-    id: a.id,
-    title: a.title,
-    description: a.description,
-    by: a.faculty_name || "Unknown",  
-    dueDate: a.deadline,                
-    department_id: a.department_id,
-    faculty_id: a.faculty_id,
-    createdAt: a.created_at,
-  };
+export async function downloadAssignmentFile(id, fileName) {
+  try {
+    const response = await http.get(`/assignments/${id}/download`, {
+      responseType: "blob",
+    });
+
+    const blob = new Blob([response.data]);
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = fileName || `assignment-${id}`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
 }

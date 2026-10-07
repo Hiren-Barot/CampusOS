@@ -27,9 +27,15 @@ const ROUTE = {
   "Change Password": "/change-password",
 };
 
+const HIDDEN_IN_SIDEBAR = ["Change Password"];
+
 export default function Sidebar({ isOpen = false, onClose = () => {} }) {
   const { logout } = useAuth();
   const { navItems } = useRole();
+
+  const visibleItems = (navItems || []).filter(
+    (label) => !HIDDEN_IN_SIDEBAR.includes(label)
+  );
 
   const content = (
     <>
@@ -43,8 +49,9 @@ export default function Sidebar({ isOpen = false, onClose = () => {} }) {
           </button>
         </div>
         <nav className="flex flex-col gap-1 px-3">
-          {navItems.map((label) => {
+          {visibleItems.map((label) => {
             const Icon = ICON[label];
+            if (!Icon) return null;
             return (
               <NavLink
                 key={label}

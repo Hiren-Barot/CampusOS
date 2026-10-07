@@ -7,7 +7,6 @@ import NotificationBell from "../notifications/NotificationBell.jsx";
 
 const THEME_KEY = "campos_theme";
 
-// Generate initials from a full name (e.g. "Vyom Dangi" → "VD")
 function getInitials(name) {
   if (!name) return "?";
   const parts = name.trim().split(/\s+/);
@@ -39,8 +38,10 @@ export default function Navbar({ onMenuClick = () => {} }) {
     navigate(`/notices?search=${encodeURIComponent(trimmed)}`);
   }
 
-  // Prefer full_name, fall back to name, then email prefix
-  const displayName = user?.full_name || user?.name || user?.email?.split("@")[0] || "User";
+  const displayName =
+    user?.full_name || user?.name || user?.email?.split("@")[0] || "User";
+
+  const firstName = displayName.split(" ")[0];
 
   return (
     <div className="flex items-center justify-between px-4 md:px-8 py-4 border-b border-hairline bg-paper-raised">
@@ -49,11 +50,14 @@ export default function Navbar({ onMenuClick = () => {} }) {
           <Menu size={22} />
         </button>
 
-        <form onSubmit={handleSearch} className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-sm border border-hairline w-[220px] md:w-[280px]">
+        <form
+          onSubmit={handleSearch}
+          className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-sm border border-hairline w-[220px] md:w-[280px]"
+        >
           <Search size={14} className="text-slate" />
           <input
             className="font-mono text-[12px] outline-none w-full bg-transparent text-ink"
-            placeholder="Search notices…"
+            placeholder="Search…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -79,9 +83,12 @@ export default function Navbar({ onMenuClick = () => {} }) {
           <div className="w-8 h-8 rounded-full flex items-center justify-center font-mono text-[11px] font-medium text-white bg-[#1B2430]">
             {getInitials(displayName)}
           </div>
-          <span className="hidden sm:inline text-[13px] font-medium text-ink">
-            {displayName}
-          </span>
+          <div className="hidden sm:flex flex-col leading-tight">
+            <span className="text-[13px] font-medium text-ink">{firstName}</span>
+            <span className="text-[10px] font-mono tracking-wide text-slate uppercase">
+              {user?.role || ""}
+            </span>
+          </div>
         </Link>
       </div>
     </div>

@@ -1,8 +1,7 @@
-import React from "react";
-import { useEffect, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import PropTypes from "prop-types";
 
-export default function Modal({ titleId, onClose, children, maxWidth }) {
+export default function Modal({ titleId, onClose, children, maxWidth = "380px" }) {
   const dialogRef = useRef(null);
 
   useEffect(() => {
@@ -53,8 +52,4 @@ Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
   maxWidth: PropTypes.string,
-};
-
-Modal.defaultProps = {
-  maxWidth: "380px",
 };

@@ -2,7 +2,14 @@ import React from "react";
 import PropTypes from "prop-types";
 import { Trash2, Pencil, Users as UsersIcon } from "lucide-react";
 
-export default function UserList({ users, canManageRow, canEditRow, onDelete, onEdit, onSelect }) {
+export default function UserList({
+  users,
+  canManageRow,
+  canEditRow,
+  onDelete = () => {},
+  onEdit = () => {},
+  onSelect,
+}) {
   if (users.length === 0) {
     return (
       <div className="text-center py-10">
@@ -31,7 +38,11 @@ export default function UserList({ users, canManageRow, canEditRow, onDelete, on
             </div>
             {(showEdit || showDelete) && (
               <div className="flex items-center gap-2">
-                {showEdit && <button onClick={(e) => { e.stopPropagation(); onEdit(u); }} aria-label="Edit user"><Pencil size={14} className="text-slate" /></button>}
+                {showEdit && (
+                  <button onClick={(e) => { e.stopPropagation(); onEdit(u); }} aria-label="Edit user">
+                    <Pencil size={14} className="text-slate" />
+                  </button>
+                )}
                 {showDelete && (
                   <button onClick={(e) => { e.stopPropagation(); onDelete(u.id); }} aria-label="Delete user">
                     <Trash2 size={14} className="text-urgent" />
@@ -62,12 +73,4 @@ UserList.propTypes = {
   onDelete: PropTypes.func,
   onEdit: PropTypes.func,
   onSelect: PropTypes.func,
-};
-
-UserList.defaultProps = {
-  canManageRow: undefined,
-  canEditRow: undefined,
-  onDelete: () => {},
-  onEdit: () => {},
-  onSelect: undefined,
 };

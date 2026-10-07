@@ -1,121 +1,122 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React from "react";
 import PropTypes from "prop-types";
-import { Trash2, Pencil, ClipboardList } from "lucide-react";
-import { shortDate } from "../../utils/dateUtils";
-import useRole from "../../hooks/useRole";
-
-// Returns true if the given date is in the past
-function isPastDate(input) {
-  if (!input) return false;
-  let s = String(input).trim();
-  // No timezone marker → treat as local (matches dateUtils.js behavior)
-  if (!s.endsWith("Z") && !/[+-]\d{2}:?\d{2}$/.test(s)) {
-    s = s.includes(" ") ? s.replace(" ", "T") : s;
-  }
-  const d = new Date(s);
-  if (Number.isNaN(d.getTime())) return false;
-  return d.getTime() < Date.now();
-}
+import { Pencil, Trash2, Download, Paperclip, Calendar } from "lucide-react";
 
 export default function AssignmentList({
   assignments,
-  canDelete = false,
-  canEdit = false,
-  onDelete = () => {},
-  onEdit = () => {},
-  onSelect = undefined,
+  onEdit,
+  onDelete,
+  onDownload,
+  onSelect,
+  canEdit,
+  canDelete,
 }) {
-  const { role } = useRole();
-  const canCreate = role === "faculty";
-
-  // Auto-refresh tick — updates due dates every 30 seconds
-  const [, setTick] = useState(0);
-  useEffect(() => {
-    const id = setInterval(() => setTick((t) => t + 1), 30_000);
-    return () => clearInterval(id);
-  }, []);
-
-  // Sort: overdue first, then keep original order
-  const sorted = useMemo(() => {
-    const list = [...assignments];
-    list.sort((a, b) => {
-      const ao = isPastDate(a.dueDate);
-      const bo = isPastDate(b.dueDate);
-      if (ao !== bo) return ao ? -1 : 1;
-      return 0;
-    });
-    return list;
-  }, [assignments]);
-
-  if (assignments.length === 0) {
+  if (!assignments || assignments.length === 0) {
     return (
-      <div className="text-center py-10">
-        <ClipboardList className="mx-auto text-slate/30 mb-2" size={32} />
-        <p className="text-[13px] text-slate">
-          {canCreate
-            ? "No assignments yet — create one to get started!"
-            : "No assignments posted yet."}
-        </p>
+      <div className="flex flex-col items-center justify-center py-16 text-slate">
+        <p className="font-serif text-[16px] mb-1">No assignments yet</p>
+        <p className="text-[12.5px]">Check back later.</p>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      {sorted.map((a) => {
-        const showEdit = typeof canEdit === "function" ? canEdit(a) : canEdit;
-        const showDelete = typeof canDelete === "function" ? canDelete(a) : canDelete;
-        const overdue = isPastDate(a.dueDate);
+    <div className="flex flex-col gap-3">
+      {assignments.map((a) => {
+        const deadline = new Date(a.deadline);
+        const isExpired = deadline < new Date();
+        const deadlineStr = deadline.toLocaleString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        const showEdit = typeof canEdit === "function" ? canEdit(a) : false;
+        const showDelete = typeof canDelete === "function" ? canDelete(a) : false;
 
         return (
           <div
             key={a.id}
             onClick={() => onSelect?.(a)}
-            className={`flex items-center justify-between px-3 py-3 border border-hairline rounded-sm ${
-              onSelect ? "cursor-pointer hover:shadow-sm" : ""
-            }`}
+            className="bg-paper-raised border border-hairline rounded-sm p-4 flex flex-col gap-2 cursor-pointer hover:border-urgent/40 transition-colors"
           >
-            <div>
-              <div className="text-[13.5px] font-medium text-ink">{a.title}</div>
-              <div className="font-mono text-[10.5px] mt-1 text-slate">{a.by}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              {/* Overdue badge: red if past, gold if future */}
-              <span
-                className={`font-mono text-[10.5px] px-2 py-1 rounded-sm ${
-                  overdue
-                    ? "bg-urgent/10 text-urgent"
-                    : "bg-event/10 text-event"
-                }`}
-              >
-                {overdue ? "OVERDUE · " : "DUE "}
-                {shortDate(a.dueDate)}
-              </span>
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-serif text-[15px] font-semibold text-ink truncate">
+                  {a.title}
+                </h3>
+                <p className="text-[11.5px] text-slate mt-0.5">
+                  {a.faculty_name || "Unknown"} · Dept #{a.department_id}
+                </p>
+              </div>
+
               {(showEdit || showDelete) && (
-                <div className="flex items-center gap-2">
-                  {showEdit && (
+                <div className="flex gap-2 shrink-0">
+                  {showEdit && onEdit && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onEdit(a);
                       }}
-                      aria-label="Edit assignment"
+                      className="text-slate hover:text-ink"
+                      aria-label="Edit"
                     >
-                      <Pencil size={13} className="text-slate" />
+                      <Pencil size={15} />
                     </button>
                   )}
-                  {showDelete && (
+                  {showDelete && onDelete && (
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         onDelete(a.id);
                       }}
-                      aria-label="Delete assignment"
+                      className="text-urgent hover:opacity-70"
+                      aria-label="Delete"
                     >
-                      <Trash2 size={13} className="text-slate" />
+                      <Trash2 size={15} />
                     </button>
                   )}
                 </div>
+              )}
+            </div>
+
+            {a.description && (
+              <p className="text-[13px] text-ink/80 line-clamp-2">{a.description}</p>
+            )}
+
+            <div className="flex items-center justify-between gap-3 pt-2 border-t border-hairline">
+              <div className="flex items-center gap-3 text-[11.5px] flex-wrap">
+                <span
+                  className={`flex items-center gap-1 font-mono ${
+                    isExpired ? "text-urgent" : "text-slate"
+                  }`}
+                >
+                  <Calendar size={12} />
+                  {deadlineStr}
+                  {isExpired && " (expired)"}
+                </span>
+
+                {a.has_file && (
+                  <span className="flex items-center gap-1 text-slate font-mono">
+                    <Paperclip size={12} />
+                    {a.file_name || "attachment"}
+                  </span>
+                )}
+              </div>
+
+              {a.has_file && onDownload && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDownload(a);
+                  }}
+                  className="flex items-center gap-1 text-[12px] font-medium text-urgent hover:opacity-70"
+                >
+                  <Download size={14} />
+                  Download
+                </button>
               )}
             </div>
           </div>
@@ -126,18 +127,15 @@ export default function AssignmentList({
 }
 
 AssignmentList.propTypes = {
-  assignments: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
-      title: PropTypes.string.isRequired,
-      dueDate: PropTypes.string,
-      by: PropTypes.string,
-      faculty_id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-    })
-  ).isRequired,
-  canDelete: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
-  canEdit: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
-  onDelete: PropTypes.func,
+  assignments: PropTypes.array,
   onEdit: PropTypes.func,
+  onDelete: PropTypes.func,
+  onDownload: PropTypes.func,
   onSelect: PropTypes.func,
+  canEdit: PropTypes.func,
+  canDelete: PropTypes.func,
+};
+
+AssignmentList.defaultProps = {
+  assignments: [],
 };

@@ -53,7 +53,6 @@ export default function Notices() {
     }
   }
 
-  // ✅ Only the original author can edit or delete
   const isAuthor = (notice) => {
     const authorId =
       notice.faculty_id ??
@@ -62,7 +61,6 @@ export default function Notices() {
       notice.user_id ??
       notice.user?.id;
 
-    // Compare loosely to handle string vs number mismatch
     return user?.id != null && authorId != null && String(authorId) === String(user.id);
   };
 
@@ -105,7 +103,10 @@ export default function Notices() {
         <div role="alert" className="text-center py-10 border border-hairline rounded-sm bg-urgent/5">
           <AlertTriangle className="mx-auto text-urgent mb-2" size={28} />
           <p className="text-[13.5px] text-ink mb-3">{loadError}</p>
-          <button onClick={refresh} className="font-mono text-[11px] font-medium px-3 py-[6px] rounded-sm text-white bg-[#1B2430]">
+          <button
+            onClick={refresh}
+            className="font-mono text-[11px] font-medium px-3 py-[6px] rounded-sm text-white bg-[#1B2430]"
+          >
             Retry
           </button>
         </div>
@@ -114,6 +115,7 @@ export default function Notices() {
           notices={notices}
           canEdit={isAuthor}
           canDelete={isAuthor}
+          canCreate={canCreateNotice}
           onEdit={setEditing}
           onDelete={(id) => handleDelete(id, notices.find((n) => n.id === id)?.title)}
           onSelect={setSelected}
