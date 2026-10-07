@@ -27,7 +27,11 @@ class AssignmentResponse(AssignmentBase):
 
     id: int
     faculty_id: int
-    faculty_name: Optional[str] = None         
+    faculty_name: Optional[str] = None
+    file_name: Optional[str] = None
+    file_size: Optional[int] = None
+    file_type: Optional[str] = None
+    has_file: bool = False
     created_at: datetime
     updated_at: Optional[datetime]
 

@@ -1,10 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List, Optional
 
 from app.core.database import get_db
 from app.core.dependencies import (
     get_current_user,
+    get_admin_user,
+    get_principal_user,
+    get_hod_user,
+    get_faculty_user,
     check_user_can_manage_user,
     check_user_can_view_user,
 )
@@ -14,32 +18,28 @@ from app.models.user_model import User
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
+
 def _check_create_permission(current_user: User, target_role: str, target_dept_id):
     ROLE_RANK = {"student": 1, "faculty": 2, "hod": 3, "principal": 4, "admin": 5}
-    my_rank = ROLE_RANK.get(current_user.role, 0)
-    target_rank = ROLE_RANK.get(target_role, 0)
 
     if current_user.role == "admin":
         return True
-
     if current_user.role == "principal":
         return target_role != "admin"
-
     if current_user.role == "hod":
         if target_role not in ["faculty", "student"]:
             return False
         if target_dept_id != current_user.department_id:
             return False
         return True
-
     if current_user.role == "faculty":
         if target_role != "student":
             return False
         if target_dept_id != current_user.department_id:
             return False
         return True
-
     return False
+
 
 @router.get("/", response_model=List[UserResponse])
 async def get_all_users(
@@ -75,9 +75,11 @@ async def get_all_users(
 
     return users
 
+
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_user(
     user_data: UserCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
@@ -99,14 +101,21 @@ async def create_user(
         raise HTTPException(status_code=400, detail="Department is required")
 
     service = UserService(db)
-    user, temp_password = await service.create_user(user_data) 
+    user, temp_password = await service.create_user(user_data)
 
     if not user:
         raise HTTPException(status_code=400, detail="User with this email already exists")
 
+    background_tasks.add_task(
+        service.send_welcome_email_async,
+        user.id,
+        temp_password,
+    )
+
     response_data = service._enrich_user(user)
     response_data["temp_password"] = temp_password
     return response_data
+
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(

@@ -4,6 +4,7 @@ from .department_repository import DepartmentRepository
 from .notice_repository import NoticeRepository
 from .assignment_repository import AssignmentRepository
 from .notification_repository import NotificationRepository
+from .profile_repository import ProfileRepository
 
 __all__ = [
     "BaseRepository",
@@ -12,4 +13,5 @@ __all__ = [
     "NoticeRepository",
     "AssignmentRepository",
     "NotificationRepository",
+    "ProfileRepository",
 ]

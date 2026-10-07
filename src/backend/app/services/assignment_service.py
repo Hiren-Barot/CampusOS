@@ -26,17 +26,33 @@ class AssignmentService:
             "faculty_id": a.faculty_id,
             "faculty_name": faculty.full_name if faculty else "Unknown",
             "deadline": a.deadline,
+            "file_name": a.file_name,
+            "file_size": a.file_size,
+            "file_type": a.file_type,
+            "has_file": bool(a.file_path),
             "created_at": a.created_at,
             "updated_at": a.updated_at,
         }
 
-    def create_assignment(self, assignment_data: AssignmentCreate, faculty_id: int) -> dict:
+    def create_assignment(
+        self,
+        assignment_data: AssignmentCreate,
+        faculty_id: int,
+        file_path: Optional[str] = None,
+        file_name: Optional[str] = None,
+        file_size: Optional[int] = None,
+        file_type: Optional[str] = None,
+    ) -> dict:
         assignment = self.assignment_repo.create(
             title=assignment_data.title,
             description=assignment_data.description,
             department_id=assignment_data.department_id,
             deadline=assignment_data.deadline,
             faculty_id=faculty_id,
+            file_path=file_path,
+            file_name=file_name,
+            file_size=file_size,
+            file_type=file_type,
         )
 
         if assignment_data.department_id:

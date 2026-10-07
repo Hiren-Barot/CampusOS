@@ -3,6 +3,7 @@ from .department_model import Department
 from .notice_model import Notice
 from .assignment_model import Assignment
 from .notification_model import Notification
+from .profile_model import Profile
 
 __all__ = [
     "User",
@@ -10,4 +11,5 @@ __all__ = [
     "Notice",
     "Assignment",
     "Notification",
+    "Profile",
 ]

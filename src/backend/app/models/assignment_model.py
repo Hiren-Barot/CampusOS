@@ -21,9 +21,12 @@ class Assignment(Base):
     department_id: Mapped[int] = mapped_column(ForeignKey("departments.id"), nullable=False)
     faculty_id: Mapped[int] = mapped_column(ForeignKey("users.id"), nullable=False)
     deadline: Mapped[datetime] = mapped_column(nullable=False)
+    file_path: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    file_name: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    file_size: Mapped[Optional[int]] = mapped_column(nullable=True)
+    file_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     created_at: Mapped[datetime] = mapped_column(server_default=func.now())
     updated_at: Mapped[Optional[datetime]] = mapped_column(onupdate=func.now())
-
 
     department: Mapped["Department"] = relationship(
         "Department",
