@@ -1,11 +1,11 @@
 import useAuth from "./useAuth";
 
 const NAV_BY_ROLE = {
-  student: ["Dashboard", "Notices", "Assignments", "Profile", "Change Password"],
-  faculty: ["Dashboard", "Notices", "Assignments", "Users", "Profile", "Change Password"],
-  hod: ["Dashboard", "Users", "Notices", "Assignments", "Profile", "Change Password"],
-  principal: ["Dashboard", "Departments", "Users", "Notices", "Profile", "Change Password"],
-  admin: ["Dashboard", "Users", "Departments", "Notices", "Profile", "Change Password"],
+  student: ["Dashboard", "Notices", "Assignments", "Queries", "Profile"],
+  faculty: ["Dashboard", "Notices", "Assignments", "Queries", "Users", "Profile"],
+  hod: ["Dashboard", "Users", "Notices", "Assignments", "Queries", "Profile"],
+  principal: ["Dashboard", "Departments", "Users", "Notices", "Queries", "Profile"],
+  admin: ["Dashboard", "Users", "Departments", "Notices", "Queries", "Profile"],
 };
 
 const CAN_CREATE_ASSIGNMENT = ["faculty"];

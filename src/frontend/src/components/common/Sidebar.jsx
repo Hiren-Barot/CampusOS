@@ -2,7 +2,7 @@ import React from "react";
 import PropTypes from "prop-types";
 import { NavLink } from "react-router-dom";
 import {
-  LayoutGrid, Megaphone, ClipboardList, Users, User, Building2, LogOut, X, KeyRound,
+  LayoutGrid, Megaphone, ClipboardList, Users, User, Building2, LogOut, X, KeyRound, MessageCircle,
 } from "lucide-react";
 import useAuth from "../../hooks/useAuth";
 import useRole from "../../hooks/useRole";
@@ -11,6 +11,7 @@ const ICON = {
   Dashboard: LayoutGrid,
   Notices: Megaphone,
   Assignments: ClipboardList,
+  Queries: MessageCircle,
   Users: Users,
   Departments: Building2,
   Profile: User,
@@ -21,6 +22,7 @@ const ROUTE = {
   Dashboard: "/dashboard",
   Notices: "/notices",
   Assignments: "/assignments",
+  Queries: "/queries",
   Users: "/users",
   Departments: "/departments",
   Profile: "/profile",
