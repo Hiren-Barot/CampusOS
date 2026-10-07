@@ -4,15 +4,12 @@ function parseDate(input) {
 
   const str = String(input).trim();
 
-  // If timezone info is present, use as-is
   if (str.endsWith("Z") || /[+-]\d{2}:?\d{2}$/.test(str)) {
     return new Date(str);
   }
 
-  // Normalize space → T
   const normalized = str.includes(" ") ? str.replace(" ", "T") : str;
 
-  // No timezone → let JavaScript treat as LOCAL time
   const d = new Date(normalized);
   return Number.isNaN(d.getTime()) ? null : d;
 }

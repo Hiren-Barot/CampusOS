@@ -16,7 +16,6 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      {/* Registration is disabled – redirect to login */}
       <Route path="/register" element={<Navigate to="/login" replace />} />
 
       <Route

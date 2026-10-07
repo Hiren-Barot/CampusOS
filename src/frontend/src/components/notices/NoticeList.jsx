@@ -22,10 +22,8 @@ export default function NoticeList({
   const { role } = useRole();
   const canPost = ["faculty", "hod", "principal", "admin"].includes(role);
 
-  // ✅ Only principal/admin see the department badge
   const canSeeDept = role === "principal" || role === "admin";
 
-  // ✅ Auto-refresh tick — updates "time ago" every 30 seconds
   const [, setTick] = useState(0);
   useEffect(() => {
     const id = setInterval(() => setTick((t) => t + 1), 30_000);

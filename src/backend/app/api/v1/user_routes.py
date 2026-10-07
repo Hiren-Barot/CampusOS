@@ -261,6 +261,10 @@ async def delete_user(
         if len(admins) <= 1:
             raise HTTPException(status_code=400, detail="Cannot delete the only admin")
 
+    can_delete, reason = service.can_hard_delete_user(user_id)
+    if not can_delete:
+        raise HTTPException(status_code=400, detail=reason)
+
     success = service.hard_delete_user(user_id)
     if not success:
         raise HTTPException(status_code=500, detail="Failed to delete user")

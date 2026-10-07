@@ -33,7 +33,6 @@ export default function ChangePassword() {
     try {
       await changePassword(currentPassword, newPassword);
       toast.success("Password changed successfully!");
-      // Logout and force re-login with new password
       setTimeout(() => {
         logout();
         navigate("/login");

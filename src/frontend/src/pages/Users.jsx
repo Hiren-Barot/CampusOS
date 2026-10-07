@@ -8,7 +8,6 @@ import UserForm from "../components/users/UserForm.jsx";
 import UserDetails from "../components/users/UserDetails.jsx";
 import Spinner from "../components/common/Spinner.jsx";
 
-// Tabs shown per logged-in role (no "All")
 const TABS_BY_ROLE = {
   admin: [
     { key: "faculty", label: "Faculty" },
@@ -55,7 +54,6 @@ export default function Users() {
 
   useEffect(refresh, []);
 
-  // Filter by tab first, then by search
   const q = search.trim().toLowerCase();
   const filtered = users
     .filter((u) => u.role === activeTab)
@@ -110,7 +108,6 @@ export default function Users() {
         )}
       </div>
 
-      {/* Filter tabs — only shown when more than one tab is available */}
       {tabs.length > 1 && (
         <div className="mb-4 flex flex-wrap gap-2">
           {tabs.map((t) => (

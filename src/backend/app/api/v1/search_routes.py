@@ -1,6 +1,3 @@
-# ============================================
-# CAMPUSOS - SEARCH ROUTES
-# ============================================
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import Optional
@@ -25,10 +22,7 @@ async def search_all(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    """
-    Unified search across all content.
-    Results filtered by user role.
-    """
+   
     results = {}
 
     can_search_notices = True
@@ -62,13 +56,7 @@ async def search_all(
 
     return results
 
-
-# ============================================
-# INTERNAL SEARCH HELPERS
-# ============================================
-
 async def search_notices(q: str, department_id: Optional[int], limit: int, db: Session, current_user: User):
-    """Search notices. Services return dicts."""
     notice_service = NoticeService(db)
     notices = notice_service.search_notices(q)
 
@@ -100,7 +88,6 @@ async def search_notices(q: str, department_id: Optional[int], limit: int, db: S
 
 
 async def search_assignments(q: str, department_id: Optional[int], limit: int, db: Session, current_user: User):
-    """Search assignments. Services return dicts."""
     assignment_service = AssignmentService(db)
     assignments = assignment_service.search_assignments(q)
 
@@ -127,7 +114,6 @@ async def search_assignments(q: str, department_id: Optional[int], limit: int, d
 
 
 async def search_users(q: str, department_id: Optional[int], limit: int, db: Session, current_user: User):
-    """Search users. Services return dicts."""
     user_service = UserService(db)
     users = user_service.search_users(q)
 
@@ -158,7 +144,6 @@ async def search_users(q: str, department_id: Optional[int], limit: int, db: Ses
 
 
 async def search_departments(q: str, limit: int, db: Session, current_user: User):
-    """Search departments. Repository returns model objects."""
     department_service = DepartmentService(db)
     departments = department_service.search_departments(q)
     departments = departments[:limit]

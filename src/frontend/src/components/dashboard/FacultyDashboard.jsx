@@ -22,13 +22,11 @@ export default function FacultyDashboard() {
   const [modal, setModal] = useState(null);
   const [editing, setEditing] = useState(null);
 
-  // ✅ Only the author can edit/delete
   const isAuthor = (item) =>
     user?.id != null &&
     item?.faculty_id != null &&
     String(item.faculty_id) === String(user.id);
 
-  // ✅ Faculty sees only their own assignments
   const myAssignments = assignments.filter(isAuthor);
 
   function refresh() {

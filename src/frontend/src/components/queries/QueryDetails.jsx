@@ -42,7 +42,6 @@ export default function QueryDetails({ query, onClose, onReplied, canReply }) {
       </div>
 
       <div className="flex flex-col gap-4 max-h-[65vh] overflow-y-auto pr-1">
-        {/* Status + meta */}
         <div className="flex items-center gap-2">
           {isAnswered ? (
             <span className="flex items-center gap-1 font-mono text-[10.5px] text-green-700 bg-green-50 border border-green-200 px-2 py-0.5 rounded-sm uppercase">
@@ -58,14 +57,12 @@ export default function QueryDetails({ query, onClose, onReplied, canReply }) {
           </span>
         </div>
 
-        {/* Question */}
         <div>
           <p className="font-mono text-[10px] tracking-wide text-slate mb-1">QUESTION</p>
           <h3 className="font-serif text-[16px] font-semibold text-ink mb-2">{query.title}</h3>
           <p className="text-[13.5px] text-ink/90 whitespace-pre-wrap">{query.description}</p>
         </div>
 
-        {/* Reply / reply form */}
         {isAnswered && query.reply ? (
           <div className="border-t border-hairline pt-4">
             <p className="font-mono text-[10px] tracking-wide text-slate mb-1">

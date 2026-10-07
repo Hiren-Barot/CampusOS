@@ -65,8 +65,6 @@ class UserService:
 
     async def create_user(self, user_data: UserCreate) -> Tuple[Optional[User], Optional[str]]:
         existing_user = self.user_repo.get_by_email(user_data.email)
-
-        existing_user = self.user_repo.get_by_email(user_data.email)
         if existing_user:
             return None, None
 
@@ -90,7 +88,6 @@ class UserService:
             )
 
         self.db.refresh(user)
-
         return user, temp_password
 
     async def send_welcome_email_async(self, user_id: int, temp_password: str) -> None:
@@ -168,7 +165,10 @@ class UserService:
         return self.user_repo.update(user_id, is_active=False) is not None
 
     def hard_delete_user(self, user_id: int) -> bool:
-        return self.user_repo.delete(user_id)
+        return self.user_repo.hard_delete(user_id)
+
+    def can_hard_delete_user(self, user_id: int) -> Tuple[bool, str]:
+        return self.user_repo.can_hard_delete(user_id)
 
     def search_users(self, query: str) -> List[dict]:
         users = self.user_repo.search_users(query)

@@ -151,7 +151,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* ACCOUNT */}
         <div className="flex flex-col gap-3">
           <p className="font-mono text-[10.5px] tracking-wide text-slate">ACCOUNT</p>
 
@@ -201,7 +200,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* PERSONAL */}
         <div className="border-t border-hairline pt-4 flex flex-col gap-3">
           <p className="font-mono text-[10.5px] tracking-wide text-slate">PERSONAL INFORMATION</p>
           <div className="grid grid-cols-2 gap-3">
@@ -216,7 +214,6 @@ export default function Profile() {
           </div>
         </div>
 
-        {/* STUDENT */}
         {isStudent && (
           <div className="border-t border-hairline pt-4 flex flex-col gap-3">
             <p className="font-mono text-[10.5px] tracking-wide text-slate">STUDENT DETAILS</p>
@@ -233,7 +230,6 @@ export default function Profile() {
           </div>
         )}
 
-        {/* FACULTY */}
         {isFacultyRole && (
           <div className="border-t border-hairline pt-4 flex flex-col gap-3">
             <p className="font-mono text-[10.5px] tracking-wide text-slate">FACULTY DETAILS</p>

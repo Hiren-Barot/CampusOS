@@ -201,11 +201,6 @@ async def download_assignment_file(
         media_type=model.file_type or "application/octet-stream",
     )
 
-
-# ============================================================
-#  GET SINGLE
-# ============================================================
-
 @router.get("/{assignment_id}", response_model=AssignmentResponse)
 async def get_assignment(
     assignment_id: int,
