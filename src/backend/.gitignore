@@ -74,3 +74,9 @@ dmypy.json
 tests/
 
 .bak*.bak
+
+uploads/
+!uploads/
+!uploads/assignments/
+uploads/assignments/*
+!uploads/assignments/.gitkeep

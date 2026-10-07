@@ -2,7 +2,7 @@
 
 A centralized student & department management platform for colleges. Consolidates notices, assignments, departments, and user management into a single role-based system.
 
-Built with **FastAPI** (backend) + **React** (frontend) + **PostgreSQL** (database).
+Built with **FastAPI** (backend) + **React + Vite** (frontend) + **PostgreSQL** (database).
 
 ---
 
@@ -13,17 +13,22 @@ Built with **FastAPI** (backend) + **React** (frontend) + **PostgreSQL** (databa
 - **Principal** — College-wide oversight, HOD management
 - **HOD** — Department management, faculty/student management
 - **Faculty** — Notice and assignment creation, student management
-- **Student** — Read-only access to notices and assignments
+- **Student** — Read-only access to notices and assignments, assignment download
 
 ### Core Features
 - JWT authentication with bcrypt password hashing
 - Auto-generated temporary passwords for new users
+- Email delivery of welcome credentials via SMTP (non-blocking, runs in background)
 - Department-scoped visibility (users see their own department)
 - Author-only edit/delete for notices and assignments
 - "All Departments" notices for Admin/Principal
 - In-app notification system with unread count
 - Full-text search across notices and assignments
 - Role-based dashboards
+- Assignment file uploads — PDF, PPT, DOCX, JPG, PNG (max 10 MB)
+- Assignment file downloads — authenticated, blob-fetched
+- Extended profile fields per role (student / faculty / admin)
+- Users edit their own profile from the Profile page
 - Dark mode support
 - Responsive mobile layout
 
@@ -42,7 +47,8 @@ Built with **FastAPI** (backend) + **React** (frontend) + **PostgreSQL** (databa
 | Pydantic v2 | Data validation |
 | python-jose | JWT tokens |
 | passlib[bcrypt] | Password hashing |
-| Pytest | Testing |
+| aiosmtplib | Async SMTP email |
+| python-multipart | File upload parsing |
 
 ### Frontend
 | Technology | Purpose |
@@ -60,42 +66,40 @@ Built with **FastAPI** (backend) + **React** (frontend) + **PostgreSQL** (databa
 ## Project Structure
 
 ```
-campusos/
+CampusOS/
 ├── src/
 │   ├── backend/
-│   │   ├── alembic/                    # Database migrations
+│   │   ├── alembic/                  # DB migrations
 │   │   │   ├── versions/
 │   │   │   └── env.py
 │   │   ├── app/
-│   │   │   ├── api/v1/                 # API routes
-│   │   │   ├── core/                   # Config, DB, security
-│   │   │   ├── models/                 # SQLAlchemy models
-│   │   │   ├── schemas/                # Pydantic schemas
-│   │   │   ├── services/               # Business logic
-│   │   │   ├── repositories/           # Data access
-│   │   │   ├── utils/                  # Helpers
-│   │   │   ├── main.py                 # App entry
-│   │   │   └── middleware.py           # Logging middleware
-│   │   ├── tests/                      # Pytest tests
+│   │   │   ├── api/v1/               # API routes
+│   │   │   ├── core/                 # Config, DB, security
+│   │   │   ├── models/               # SQLAlchemy models
+│   │   │   ├── schemas/              # Pydantic schemas
+│   │   │   ├── services/             # Business logic
+│   │   │   ├── repositories/         # Data access
+│   │   │   ├── utils/                # Helpers
+│   │   │   ├── main.py               # App entry
+│   │   │   └── middleware.py         # Logging middleware
+│   │   ├── uploads/                  # Assignment files (gitignored)
 │   │   ├── alembic.ini
 │   │   ├── requirements.txt
 │   │   └── .env.example
-│   │
 │   └── frontend/
 │       ├── src/
-│       │   ├── components/             # Reusable UI
-│       │   ├── pages/                  # Route pages
-│       │   ├── services/               # API clients
-│       │   ├── context/                # Auth context
-│       │   ├── hooks/                  # Custom hooks
-│       │   ├── utils/                  # Helpers
+│       │   ├── components/           # Reusable UI
+│       │   ├── pages/                # Route pages
+│       │   ├── services/             # API clients
+│       │   ├── context/              # Auth context
+│       │   ├── hooks/                # Custom hooks
+│       │   ├── utils/                # Helpers
 │       │   ├── App.jsx
 │       │   └── main.jsx
 │       ├── package.json
 │       ├── tailwind.config.js
 │       ├── vite.config.js
 │       └── .env.example
-│
 ├── .gitignore
 └── README.md
 ```
@@ -108,104 +112,129 @@ campusos/
 - **Python 3.11+**
 - **Node.js 18+** and **npm**
 - **PostgreSQL 15+**
+- **Git**
 
-### Backend Setup
+### 1. Clone the repository
 
-**1. Navigate to backend:**
+```bash
+git clone <your-repo-url>
+cd CampusOS
+```
+
+### 2. Backend Setup
+
 ```bash
 cd src/backend
-```
 
-**2. Create virtual environment:**
-```bash
-python -m venv venv
+# Create and activate virtual environment
+python -m venv .venv
 
-# Windows:
-venv\Scripts\activate
+# Windows (Git Bash / PowerShell):
+source .venv/Scripts/activate
 
 # Mac/Linux:
-source venv/bin/activate
-```
+source .venv/bin/activate
 
-**3. Install dependencies:**
-```bash
+# Install dependencies
 pip install -r requirements.txt
 ```
 
-**4. Set up PostgreSQL:**
+**Create the database in PostgreSQL:**
+
 ```bash
-# Login to PostgreSQL
 psql -U postgres
 
-# Create database and user
 CREATE DATABASE campusos;
 CREATE USER campusos_user WITH PASSWORD 'your_password_here';
 GRANT ALL PRIVILEGES ON DATABASE campusos TO campusos_user;
 
-# Connect to the database
 \c campusos
 GRANT ALL ON SCHEMA public TO campusos_user;
 ALTER SCHEMA public OWNER TO campusos_user;
-
-# Exit
 \q
 ```
 
-**5. Configure environment:**
+**Configure environment:**
+
 ```bash
 cp .env.example .env
-# Edit .env with your database credentials
+# Edit .env with your actual values:
+#   - DATABASE_URL (with your PostgreSQL credentials)
+#   - JWT_SECRET_KEY (any random string)
+#   - SMTP_USER / SMTP_PASSWORD (Gmail App Password, optional — see below)
 ```
 
-**6. Run migrations:**
+**Run migrations (creates all tables):**
+
 ```bash
 alembic upgrade head
 ```
 
-**7. Start the server:**
+**Create the uploads folder:**
+
+```bash
+mkdir -p uploads/assignments
+touch uploads/assignments/.gitkeep
+```
+
+**Start the backend server:**
+
 ```bash
 uvicorn app.main:app --reload
 ```
 
-Backend runs at: **http://localhost:8000**
-Swagger docs: **http://localhost:8000/docs**
+- Backend: **http://localhost:8000**
+- Swagger docs: **http://localhost:8000/docs**
 
-### Frontend Setup
+### 3. Frontend Setup
 
-**1. Navigate to frontend:**
 ```bash
+# In a new terminal, from project root
 cd src/frontend
-```
 
-**2. Install dependencies:**
-```bash
+# Install dependencies
 npm install
-```
 
-**3. Configure environment:**
-```bash
+# Configure environment
 cp .env.example .env
 # Default: VITE_API_URL=http://localhost:8000/api/v1
-```
 
-**4. Start the dev server:**
-```bash
+# Start dev server
 npm run dev
 ```
 
-Frontend runs at: **http://localhost:5173**
+- Frontend: **http://localhost:5173**
+
+### 4. Gmail SMTP Setup (for welcome emails)
+
+Optional but recommended for a full demo.
+
+1. Create a Gmail account (e.g. `campusos.noreply@gmail.com`)
+2. Enable **2-Step Verification** on that account
+3. Generate an **App Password**: https://myaccount.google.com/apppasswords
+4. Put the 16-character password in backend `.env`:
+   ```
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=campusos.noreply@gmail.com
+   SMTP_PASSWORD=xxxx xxxx xxxx xxxx
+   EMAIL_FROM_ADDRESS=campusos.noreply@gmail.com
+   EMAIL_FROM_NAME=CampusOS
+   ```
+
+If SMTP credentials are not configured, emails are silently skipped — the app still works.
 
 ---
 
 ## Demo Accounts
 
-**Create demo users by running the seed script** (see below) OR create them manually through the Admin dashboard.
+Run the seed script OR create users manually through the Admin dashboard.
 
-Default password for all demo accounts: `demo123`
+Default password for demo accounts: `demo123`
 
 | Role | Email |
 |------|-------|
-| Admin | admin@campos.app |
+| Admin | admin@campusos.app |
 | Principal | principal@gtu.ac.in |
 | HOD (CE) | hod.ce@gtu.ac.in |
 | HOD (IT) | hod.it@gtu.ac.in |
@@ -220,20 +249,19 @@ Default password for all demo accounts: `demo123`
 ### Authentication
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/auth/register` | Student self-registration |
-| POST | `/api/v1/auth/login` | Login |
+| POST | `/api/v1/auth/login` | Login (returns JWT) |
 | GET | `/api/v1/auth/me` | Current user profile |
-| POST | `/api/v1/auth/change-password` | Change password |
+| POST | `/api/v1/auth/change-password` | Change own password |
 
 ### Users
 | Method | Endpoint | Access |
 |--------|----------|--------|
 | GET | `/api/v1/users/` | Admin, Principal, HOD, Faculty |
-| POST | `/api/v1/users/` | Admin, Principal, HOD, Faculty |
+| POST | `/api/v1/users/` | Admin, Principal, HOD, Faculty (role-scoped) |
 | GET | `/api/v1/users/me` | All authenticated |
 | GET | `/api/v1/users/{id}` | Role-based |
-| PUT | `/api/v1/users/{id}` | Role-based |
-| DELETE | `/api/v1/users/{id}` | Role-based (higher can delete lower) |
+| PUT | `/api/v1/users/{id}` | Self OR higher authority |
+| DELETE | `/api/v1/users/{id}` | Higher authority only |
 | GET | `/api/v1/users/search?q=` | Role-based |
 
 ### Departments
@@ -257,7 +285,8 @@ Default password for all demo accounts: `demo123`
 | Method | Endpoint | Access |
 |--------|----------|--------|
 | GET | `/api/v1/assignments/` | All authenticated |
-| POST | `/api/v1/assignments/` | Faculty only |
+| POST | `/api/v1/assignments/` | Faculty only (multipart/form-data) |
+| GET | `/api/v1/assignments/{id}/download` | Role-scoped |
 | PUT | `/api/v1/assignments/{id}` | Author only |
 | DELETE | `/api/v1/assignments/{id}` | Author only |
 
@@ -268,14 +297,17 @@ Default password for all demo accounts: `demo123`
 | GET | `/api/v1/notifications/unread/count` | Unread count |
 | PATCH | `/api/v1/notifications/{id}/read` | Mark as read |
 
-Full API documentation available at `/docs` (Swagger UI) when running in debug mode.
+Full API documentation at `/docs` (Swagger UI) when running in debug mode.
 
 ---
 
 ## Database Schema
 
 ### Users
-Stores all user accounts across 5 roles. Fields: `id`, `email`, `hashed_password`, `full_name`, `role`, `department_id`, `is_active`, `must_change_password`, `phone`, `gender`, `date_of_birth`, `profile_picture`, `created_at`, `updated_at`.
+All user accounts. Fields: `id`, `email`, `hashed_password`, `full_name`, `role`, `department_id`, `is_active`, `must_change_password`, `created_at`, `updated_at`.
+
+### Profiles
+Role-specific user details. One-to-one with User. Fields: `id`, `user_id`, `phone`, `gender`, `date_of_birth`, `address`, `enrollment_no`, `course`, `semester`, `admission_year`, `parent_name`, `parent_phone`, `qualification`, `specialization`, `experience_years`, `joining_date`, `designation`, `created_at`, `updated_at`.
 
 ### Departments
 Academic departments. Fields: `id`, `name`, `code`, `hod_id`, `created_at`.
@@ -284,56 +316,53 @@ Academic departments. Fields: `id`, `name`, `code`, `hod_id`, `created_at`.
 Department announcements. Fields: `id`, `title`, `content`, `department_id` (nullable for "all departments"), `faculty_id`, `is_published`, `created_at`, `updated_at`.
 
 ### Assignments
-Student assignments. Fields: `id`, `title`, `description`, `department_id`, `faculty_id`, `deadline`, `created_at`, `updated_at`.
+Student assignments with optional file. Fields: `id`, `title`, `description`, `department_id`, `faculty_id`, `deadline`, `file_path`, `file_name`, `file_size`, `file_type`, `created_at`, `updated_at`.
 
 ### Notifications
 In-app notifications. Fields: `id`, `user_id`, `title`, `message`, `type`, `related_id`, `is_read`, `created_at`.
 
 ---
 
-## Testing
+## Development Workflow
 
-### Backend Tests
+When you pull new changes from a teammate:
+
 ```bash
+git pull
+
+# Backend: apply any new migrations
 cd src/backend
+source .venv/Scripts/activate       # or .venv/bin/activate
+alembic upgrade head
 
-# Run all tests
-pytest
-
-# With verbose output
-pytest -v
-
-# With coverage
-pytest --cov=app
+# Restart backend
+uvicorn app.main:app --reload
 ```
 
----
-
-## Seeding Demo Data
-
-To populate the database with demo users, departments, notices, and assignments, create a seed script at `src/backend/seed_full.py` and run:
+When you add/change a model:
 
 ```bash
 cd src/backend
-python seed_full.py
+source .venv/Scripts/activate
+alembic revision --autogenerate -m "short description"
+# ALWAYS open the generated file and check what it does!
+alembic upgrade head
 ```
 
-The seed script is gitignored to keep demo data out of production.
+**Never edit migration files by hand unless autogenerate fails.**
 
 ---
 
-## Production Deployment
+## File Uploads
 
-### Backend (e.g., Render, Railway)
-1. Set environment variables (see `.env.example`)
-2. Set `DEBUG=False`
-3. Set `CORS_ORIGINS=https://yourdomain.com`
-4. Run migrations: `alembic upgrade head`
-5. Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+Assignment files are stored on local disk at `src/backend/uploads/assignments/`.
 
-### Frontend (e.g., Vercel, Netlify)
-1. Set `VITE_API_URL=https://your-backend.com/api/v1`
-2. Build: `npm run build`
-3. Deploy: `dist/` folder
+- Max size: **10 MB**
+- Allowed types: **PDF, PPT, PPTX, DOC, DOCX, JPG, JPEG, PNG**
+- Filenames are stored as random UUIDs on disk to prevent collisions and path traversal
+- Original filename preserved in the DB (`file_name` column) and shown to users
+- `uploads/` folder is gitignored — only the folder structure (`.gitkeep`) is committed
+
+For production, replace local disk storage with S3 / Cloudinary / similar.
 
 ---
