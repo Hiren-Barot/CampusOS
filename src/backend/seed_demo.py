@@ -196,8 +196,8 @@ USERS = [
         },
     },
     {
-        "email": f"rahil.faculty@{EMAIL_DOMAIN}",
-        "name": "Rahil Khan",
+        "email": f"rahul.faculty@{EMAIL_DOMAIN}",
+        "name": "Rahul Sharma",
         "role": "faculty",
         "dept": "IT",
         "profile": {
@@ -443,9 +443,9 @@ NOTICES = [
     },
     {
         "title": "AWS Workshop — 14-15 Oct",
-        "content": "Two-day hands-on AWS workshop. Register with Prof. Rahil by 12 Oct.",
+        "content": "Two-day hands-on AWS workshop. Register with Prof. Rahul by 12 Oct.",
         "dept": "IT",
-        "author": f"rahil.faculty@{EMAIL_DOMAIN}",
+        "author": f"rahul.faculty@{EMAIL_DOMAIN}",
     },
     {
         "title": "Industrial Visit — AMUL Plant",
@@ -487,7 +487,7 @@ ASSIGNMENTS = [
         "title": "Cloud Computing Case Study",
         "description": "Write a 2-page case study on a real-world cloud migration.",
         "dept": "IT",
-        "author": f"rahil.faculty@{EMAIL_DOMAIN}",
+        "author": f"rahul.faculty@{EMAIL_DOMAIN}",
         "due_in_days": 10,
         "seed_file": "networks_assignment.pdf",
     },
