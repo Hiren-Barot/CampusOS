@@ -1,10 +1,19 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.core.database import get_db
 from app.core.dependencies import get_current_user
-from app.schemas.auth_schemas import UserLogin, UserRegister, Token, ChangePassword
+from app.schemas.auth_schemas import (
+    UserLogin,
+    UserRegister,
+    Token,
+    ChangePassword,
+    ForgotPasswordRequest,
+    ResetPasswordRequest,
+)
 from app.services.auth_service import AuthService
+from app.services.email_service import email_service
 from app.services.user_service import UserService
 from app.models.user_model import User
 
@@ -98,3 +107,49 @@ async def get_me(
 ):
     user_service = UserService(db)
     return user_service._enrich_user(current_user)
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    payload: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    auth_service = AuthService(db)
+    result = auth_service.create_password_reset_token(payload.email)
+
+    if result:
+        user, token = result
+        reset_url = f"{settings.FRONTEND_URL}/reset-password?token={token}"
+
+        try:
+            await email_service.send_password_reset_email(
+                to_email=user.email,
+                full_name=user.full_name,
+                reset_url=reset_url,
+            )
+        except Exception:
+            pass
+
+    return {
+        "message": "If an account exists for that email, a reset link has been sent."
+    }
+
+
+@router.post("/reset-password")
+async def reset_password(
+    payload: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    auth_service = AuthService(db)
+    success = auth_service.reset_password_with_token(
+        token=payload.token,
+        new_password=payload.new_password,
+    )
+
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+
+    return {"message": "Password reset successfully. You can now log in."}

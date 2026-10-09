@@ -1,4 +1,4 @@
-import React, { useState , useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import useAuth from "../../hooks/useAuth";
@@ -81,6 +81,11 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
             {fieldErrors.password && <p className="text-urgent text-[11px] mt-1">{fieldErrors.password}</p>}
+            <div className="flex justify-end mt-2">
+              <Link to="/forgot-password" className="font-mono text-[10px] text-urgent hover:underline">
+                Forgot password?
+              </Link>
+            </div>
           </div>
           <button
             type="submit"

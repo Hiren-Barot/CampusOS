@@ -80,4 +80,25 @@ export async function changePassword(currentPassword, newPassword) {
   }
 }
 
+export async function forgotPassword(email) {
+  try {
+    const response = await http.post("/auth/forgot-password", { email });
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
+export async function resetPassword(token, newPassword) {
+  try {
+    const response = await http.post("/auth/reset-password", {
+      token,
+      new_password: newPassword,
+    });
+    return response.data;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
 export { setStoredUser };

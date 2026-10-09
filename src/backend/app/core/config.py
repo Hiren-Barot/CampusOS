@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+
 class Settings(BaseSettings):
 
     DATABASE_URL: str
@@ -11,6 +12,8 @@ class Settings(BaseSettings):
     APP_NAME: str = "CampusOS"
     DEBUG: bool = True
     API_PREFIX: str = "/api/v1"
+
+    FRONTEND_URL: str = "http://localhost:5173"
 
     CORS_ORIGINS: str = "http://localhost:5173"
 
@@ -27,5 +30,6 @@ class Settings(BaseSettings):
         extra="ignore",
         case_sensitive=True,
     )
+
 
 settings = Settings()
