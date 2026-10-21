@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
 import toast from "react-hot-toast";
 import useAuth from "../../hooks/useAuth";
 
 export default function Login() {
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,6 +46,19 @@ export default function Login() {
       setLoading(false);
     }
   }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    setLoading(true);
+    try {
+      await googleLogin(credentialResponse.credential);
+      toast.success("Welcome back!");
+      navigate("/dashboard");
+    } catch (err) {
+      toast.error(err.message || "Google login failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen flex items-center justify-center bg-paper px-4">
@@ -97,7 +111,27 @@ export default function Login() {
           </button>
         </form>
 
-        <p className="text-[12.5px] text-slate mt-5 text-center">
+        <div className="mt-6 mb-6 relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-hairline"></div>
+          </div>
+          <div className="relative flex justify-center text-[10px] font-mono tracking-wide">
+            <span className="bg-paper-raised px-2 text-slate">OR CONTINUE WITH</span>
+          </div>
+        </div>
+
+        <div className="w-full flex justify-center">
+          <GoogleLogin
+            onSuccess={handleGoogleSuccess}
+            onError={() => toast.error("Google login failed")}
+            theme="outline"
+            size="large"
+            text="continue_with"
+            width="100%"
+          />
+        </div>
+
+        <p className="text-[12.5px] text-slate mt-6 text-center">
           Contact your department admin if you need an account.
         </p>
       </div>

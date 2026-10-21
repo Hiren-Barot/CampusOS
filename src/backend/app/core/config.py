@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     EMAIL_FROM_NAME: str = "CampusOS"
     EMAIL_FROM_ADDRESS: str = ""
 
+    GOOGLE_CLIENT_ID: str = ""
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

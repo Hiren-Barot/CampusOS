@@ -21,6 +21,12 @@ export function AuthProvider({ children }) {
     return session;
   }
 
+  async function googleLogin(credential) {
+    const session = await authService.googleLogin(credential);
+    setUser(session);
+    return session;
+  }
+
   async function register(data) {
     const session = await authService.register(data);
     setUser(session);
@@ -30,6 +36,7 @@ export function AuthProvider({ children }) {
   function logout() {
     document.documentElement.classList.remove("dark");
     localStorage.setItem("theme", "light");
+    authService.logout();
     setUser(null);
   }
 
@@ -43,7 +50,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, updateProfile }}>
+    <AuthContext.Provider value={{ user, loading, login, googleLogin, register, logout, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );

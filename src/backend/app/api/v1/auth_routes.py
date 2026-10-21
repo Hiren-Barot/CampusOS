@@ -1,5 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
+from google.oauth2 import id_token
+from google.auth.transport import requests as google_requests
 
 from app.core.config import settings
 from app.core.database import get_db
@@ -11,6 +13,7 @@ from app.schemas.auth_schemas import (
     ChangePassword,
     ForgotPasswordRequest,
     ResetPasswordRequest,
+    GoogleAuthRequest,
 )
 from app.services.auth_service import AuthService
 from app.services.email_service import email_service
@@ -65,6 +68,52 @@ async def login(
         token_type="bearer",
         must_change_password=user.must_change_password,
     )
+
+
+@router.post("/google", response_model=Token)
+async def google_login(
+    payload: GoogleAuthRequest,
+    db: Session = Depends(get_db),
+):
+    try:
+        idinfo = id_token.verify_oauth2_token(
+            payload.credential,
+            google_requests.Request(),
+            settings.GOOGLE_CLIENT_ID
+        )
+
+        email = idinfo.get("email")
+        name = idinfo.get("name", email.split("@")[0])
+
+        if not email:
+            raise HTTPException(status_code=400, detail="Email not provided by Google")
+
+        auth_service = AuthService(db)
+        user = auth_service.user_repo.get_by_email(email)
+
+        if not user:
+            user = auth_service.user_repo.create(
+                email=email,
+                hashed_password="oauth_user_no_password",
+                full_name=name,
+                role="student",
+                is_active=True,
+                must_change_password=False,
+            )
+
+        access_token = auth_service.create_access_token(user)
+
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            must_change_password=user.must_change_password,
+        )
+
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid Google token",
+        )
 
 
 @router.post("/change-password")

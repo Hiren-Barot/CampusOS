@@ -24,6 +24,26 @@ export async function login(email, password) {
   }
 }
 
+export async function googleLogin(credential) {
+  try {
+    const response = await http.post("/auth/google", { credential });
+    const { access_token, must_change_password } = response.data;
+
+    setToken(access_token);
+
+    const userResponse = await http.get("/auth/me");
+    const user = {
+      ...userResponse.data,
+      must_change_password,
+    };
+
+    setStoredUser(user);
+    return user;
+  } catch (error) {
+    throw new Error(getErrorMessage(error));
+  }
+}
+
 export async function register({ name, email, password }) {
   if (!name || !email || !password) {
     throw new Error("Name, email and password are required");

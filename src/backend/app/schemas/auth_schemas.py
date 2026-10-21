@@ -34,6 +34,10 @@ class ResetPasswordRequest(BaseModel):
     new_password: str = Field(..., min_length=6, description="New password (min 6 chars)")
 
 
+class GoogleAuthRequest(BaseModel):
+    credential: str = Field(..., description="Google ID token")
+
+
 class UserResponse(BaseModel):
     id: int
     email: str
