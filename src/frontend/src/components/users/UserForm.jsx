@@ -11,6 +11,10 @@ export default function UserForm({ onClose, onSubmit, roleOptions, initialData, 
   const isEdit = mode === "edit";
   const titleId = "user-form-title";
 
+  const maxDateObj = new Date();
+  maxDateObj.setFullYear(maxDateObj.getFullYear() - 18);
+  const maxDob = maxDateObj.toISOString().split("T")[0];
+
   const [name, setName] = useState(initialData?.full_name || initialData?.name || "");
   const [email, setEmail] = useState(initialData?.email || "");
   const [role, setRole] = useState(initialData?.role || roleOptions[0] || "student");
@@ -245,6 +249,7 @@ export default function UserForm({ onClose, onSubmit, roleOptions, initialData, 
                 <label className="font-mono text-[10px] tracking-wide block mb-1 text-slate">DATE OF BIRTH</label>
                 <input
                   type="date"
+                  max={maxDob}
                   className="w-full border border-hairline rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised"
                   value={profile.date_of_birth}
                   onChange={(e) => updateProfile("date_of_birth", e.target.value)}

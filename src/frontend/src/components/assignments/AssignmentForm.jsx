@@ -14,7 +14,7 @@ export default function AssignmentForm({ onClose, onSubmit, initialData, mode })
   const [title, setTitle] = useState(initialData?.title || "");
   const [description, setDescription] = useState(initialData?.description || "");
   const [deadline, setDeadline] = useState(
-    initialData?.deadline ? initialData.deadline.slice(0, 16) : ""
+    initialData?.deadline ? initialData.deadline.slice(0, 10) : ""
   );
   const [file, setFile] = useState(null);
   const [errors, setErrors] = useState({});
@@ -43,8 +43,16 @@ export default function AssignmentForm({ onClose, onSubmit, initialData, mode })
   function validate() {
     const next = {};
     if (!title.trim()) next.title = "Title is required";
-    if (!deadline) next.deadline = "Deadline is required";
-    else if (new Date(deadline) <= new Date()) next.deadline = "Deadline must be in the future";
+    if (!deadline) {
+      next.deadline = "Deadline is required";
+    } else {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const selected = new Date(deadline);
+      if (selected < today) {
+        next.deadline = "Deadline cannot be in the past";
+      }
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   }
@@ -55,7 +63,7 @@ export default function AssignmentForm({ onClose, onSubmit, initialData, mode })
     setSubmitting(true);
 
     try {
-      const deadlineISO = deadline.length === 16 ? `${deadline}:00` : deadline;
+      const deadlineISO = `${deadline}T23:59:00`;
 
       const payload = {
         title: title.trim(),
@@ -116,10 +124,10 @@ export default function AssignmentForm({ onClose, onSubmit, initialData, mode })
 
           <div>
             <label className="font-mono text-[10px] tracking-wide block mb-1 text-slate">
-              DEADLINE
+              DEADLINE DATE
             </label>
             <input
-              type="datetime-local"
+              type="date"
               className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${errors.deadline ? "border-urgent" : "border-hairline"}`}
               value={deadline}
               onChange={(e) => setDeadline(e.target.value)}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
+import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuth from "../../hooks/useAuth";
 
@@ -9,6 +10,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fieldErrors, setFieldErrors] = useState({});
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -87,13 +89,22 @@ export default function Login() {
           </div>
           <div>
             <label className="font-mono text-[10px] tracking-wide block mb-1 text-slate">PASSWORD</label>
-            <input
-              type="password"
-              className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${fieldErrors.password ? "border-urgent" : "border-hairline"}`}
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                className={`w-full border rounded-sm pl-3 pr-10 py-2 text-[13px] text-ink bg-paper-raised ${fieldErrors.password ? "border-urgent" : "border-hairline"}`}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-ink focus:outline-none"
+              >
+                {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {fieldErrors.password && <p className="text-urgent text-[11px] mt-1">{fieldErrors.password}</p>}
             <div className="flex justify-end mt-2">
               <Link to="/forgot-password" className="font-mono text-[10px] text-urgent hover:underline">

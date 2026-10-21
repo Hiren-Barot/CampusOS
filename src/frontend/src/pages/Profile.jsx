@@ -272,6 +272,14 @@ export default function Profile() {
 }
 
 function FieldInput({ field, value, onChange }) {
+  let maxAttr = field.max;
+  
+  if (field.key === "date_of_birth") {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    maxAttr = d.toISOString().split("T")[0];
+  }
+
   return (
     <div>
       <label className="font-mono text-[10px] tracking-wide block mb-1 text-slate">
@@ -292,7 +300,7 @@ function FieldInput({ field, value, onChange }) {
         <input
           type={field.type || "text"}
           min={field.min}
-          max={field.max}
+          max={maxAttr}
           placeholder={field.placeholder || ""}
           className="w-full border border-hairline rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised"
           value={value ?? ""}

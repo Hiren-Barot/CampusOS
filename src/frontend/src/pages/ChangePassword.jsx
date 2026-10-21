@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff } from "lucide-react";
 import toast from "react-hot-toast";
 import useAuth from "../hooks/useAuth";
 import { changePassword } from "../services/authService";
@@ -10,6 +11,9 @@ export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -60,14 +64,23 @@ export default function ChangePassword() {
             <label htmlFor="current-password" className="font-mono text-[10px] tracking-wide block mb-1 text-slate">
               CURRENT PASSWORD
             </label>
-            <input
-              id="current-password"
-              type="password"
-              className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${errors.currentPassword ? "border-urgent" : "border-hairline"}`}
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              autoFocus
-            />
+            <div className="relative">
+              <input
+                id="current-password"
+                type={showCurrent ? "text" : "password"}
+                className={`w-full border rounded-sm pl-3 pr-10 py-2 text-[13px] text-ink bg-paper-raised ${errors.currentPassword ? "border-urgent" : "border-hairline"}`}
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+                autoFocus
+              />
+              <button
+                type="button"
+                onClick={() => setShowCurrent(!showCurrent)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-ink focus:outline-none"
+              >
+                {showCurrent ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.currentPassword && <p className="text-urgent text-[11px] mt-1">{errors.currentPassword}</p>}
           </div>
 
@@ -75,13 +88,22 @@ export default function ChangePassword() {
             <label htmlFor="new-password" className="font-mono text-[10px] tracking-wide block mb-1 text-slate">
               NEW PASSWORD
             </label>
-            <input
-              id="new-password"
-              type="password"
-              className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${errors.newPassword ? "border-urgent" : "border-hairline"}`}
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                id="new-password"
+                type={showNew ? "text" : "password"}
+                className={`w-full border rounded-sm pl-3 pr-10 py-2 text-[13px] text-ink bg-paper-raised ${errors.newPassword ? "border-urgent" : "border-hairline"}`}
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-ink focus:outline-none"
+              >
+                {showNew ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.newPassword && <p className="text-urgent text-[11px] mt-1">{errors.newPassword}</p>}
             <p className="font-mono text-[10px] text-slate mt-1">Minimum 6 characters</p>
           </div>
@@ -90,13 +112,22 @@ export default function ChangePassword() {
             <label htmlFor="confirm-password" className="font-mono text-[10px] tracking-wide block mb-1 text-slate">
               CONFIRM NEW PASSWORD
             </label>
-            <input
-              id="confirm-password"
-              type="password"
-              className={`w-full border rounded-sm px-3 py-2 text-[13px] text-ink bg-paper-raised ${errors.confirmPassword ? "border-urgent" : "border-hairline"}`}
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            />
+            <div className="relative">
+              <input
+                id="confirm-password"
+                type={showConfirm ? "text" : "password"}
+                className={`w-full border rounded-sm pl-3 pr-10 py-2 text-[13px] text-ink bg-paper-raised ${errors.confirmPassword ? "border-urgent" : "border-hairline"}`}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirm(!showConfirm)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate hover:text-ink focus:outline-none"
+              >
+                {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+              </button>
+            </div>
             {errors.confirmPassword && <p className="text-urgent text-[11px] mt-1">{errors.confirmPassword}</p>}
           </div>
 
